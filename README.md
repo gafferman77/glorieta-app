@@ -22,3 +22,10 @@ Implementar almacenamiento central y fotos con backend protegido, probar simulta
 
 ## Seguridad
 La beta no pide login. Eso no autoriza exponer claves secretas de Supabase ni permitir escritura pública ilimitada.
+
+## Backend compartido (preparado, todavía NO desplegado)
+- `supabase/glorieta_schema.sql`: tablas, RLS, fotos privadas y funciones atómicas.
+- `supabase/functions/glorieta-api/index.ts`: API con acceso mediante secreto `GLORIETA_ACCESS_CODE` configurado exclusivamente en Supabase.
+- No hay contraseñas ni service-role keys en el repositorio público.
+- Todavía falta autorizar organización de destino, crear proyecto independiente, aplicar SQL, configurar secreto, desplegar la función, conectar interfaz y probar entre dos dispositivos.
+- Mientras eso no suceda, los datos del navegador son exclusivamente locales. **No cargar inventario real todavía**.
