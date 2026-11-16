@@ -9,14 +9,16 @@ const max = (value:unknown,n:number)=>String(value??"").trim().slice(0,n);
 const nullable = (value:unknown,n:number)=>max(value,n)||null;
 const good = (value:unknown)=>typeof value==="string" && value.length>=1;
 const ERROR = (err: unknown) => err instanceof Error ? err.message : "Error desconocido";
-function auth(req:Request){
+async function auth(req:Request){
  const got=req.headers.get("x-glorieta-key")||"";
- const secret=Deno.env.get("GLORIETA_ACCESS_CODE")||"";
- // Require an unpredictable high entropy phrase; do not allow accidental empty key.
- if(secret.length<16||got.length!==secret.length)return false;
- let diff=0;for(let i=0;i<got.length;i++)diff |=got.charCodeAt(i)^secret.charCodeAt(i);
+ if(got.length<16||got.length>128)return false;
+ const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(got));
+ const received=Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join("");
+ const expected="142f51b582033573d2c82789b68549444499e82eb6864c450162a59dad4e9e55";
+ let diff=0;for(let i=0;i<expected.length;i++)diff |=expected.charCodeAt(i)^received.charCodeAt(i);
  return diff===0;
 }
+
 const db=createClient(Deno.env.get("SUPABASE_URL")||"",Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"",{auth:{persistSession:false,autoRefreshToken:false}});
 async function imageUrl(path:string|null){
  if(!path)return null;
@@ -35,7 +37,7 @@ Deno.serve(async req=>{
  if(req.method==="OPTIONS")return new Response(null,{headers});
  if(req.method!=="POST")return respond({error:"Método no permitido"},405);
  if(req.headers.get("origin")!==ORIGIN)return respond({error:"Origen no permitido"},403);
- if(!auth(req))return unauthorized();
+ if(!(await auth(req)))return unauthorized();
  const contentLength=Number(req.headers.get("content-length")||0);
  if(contentLength>1600000)return respond({error:"Solicitud demasiado grande"},413);
  try{
