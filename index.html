@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#181b18"><meta name="description" content="Glorieta · Inventario colaborativo de PARQUE"><link rel="manifest" href="manifest.webmanifest"><title>GLORIETA | PARQUE</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Kalam:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head><body>
+<div class="app-frame"><div class="blackboard">
+<header class="masthead"><div class="tiny-chalk">✦ INVENTARIO COLABORATIVO ✦</div><h1>PARQUE<span class="chalk-star">✳</span></h1><p>Pañol <span class="amp">&</span> Glorieta</p><div class="corner-scribble" aria-hidden="true">✳</div></header>
+<div class="ribbon" aria-label="Sector Glorieta"><div class="gazebo">⌂</div><div><span class="ribbon-label">SECTOR</span><strong>GLORIETA</strong></div><span class="ribbon-tag">BETA V1</span></div>
+<div class="workarea"><div class="status-line"><span>🟢 <b>Inventario activo</b></span><span id="date-text"></span></div><div class="section-heading"><span class="scribble">¿Qué necesitás hacer?</span><span class="chalk-underline"></span></div>
+<nav class="tiles" aria-label="Secciones"><button class="tile active" data-view="inventory"><span class="tile-icon">◫</span><span>Inventario</span></button><button class="tile" data-view="add"><span class="tile-icon">✚</span><span>Cargar artículo</span></button><button class="tile" data-view="moves"><span class="tile-icon">⇆</span><span>Movimientos</span></button><button class="tile" data-view="info"><span class="tile-icon">◎</span><span>Acerca de</span></button></nav>
+<main id="main-panel" aria-live="polite"></main>
+<footer><span>✺</span> Cada objeto tiene su lugar. <span>✺</span></footer></div>
+</div></div>
+<div id="toast" role="status" aria-live="polite"></div><script src="app.js"></script></body></html>
