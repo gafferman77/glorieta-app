@@ -29,3 +29,13 @@ La beta no pide login. Eso no autoriza exponer claves secretas de Supabase ni pe
 - No hay contraseñas ni service-role keys en el repositorio público.
 - Todavía falta autorizar organización de destino, crear proyecto independiente, aplicar SQL, configurar secreto, desplegar la función, conectar interfaz y probar entre dos dispositivos.
 - Mientras eso no suceda, los datos del navegador son exclusivamente locales. **No cargar inventario real todavía**.
+
+
+## Conexión compartida — 16 noviembre 2026
+- Backend Edge Function `glorieta-api` desplegado en proyecto `czvchpltqyjqyopiiinl`.
+- `index.html` sirve `cloud.js` en lugar de la antigua demo `app.js`.
+- `cloud.js` requiere nombre del encargado y código de acceso compartido, guardados solo en sessionStorage.
+- Fotos en bucket privado `glorieta-photos`, con enlaces temporales.
+- Inventario nuevo comienza **vacío**; los cinco artículos de ejemplo ya no se muestran en la edición compartida.
+- **Pendiente:** prueba real con dos celulares y verificación de operaciones de lectura, escritura y fotos. No confundir desplegado con validado.
+- Para cambiar el código de acceso, sustituir el digest de la Edge Function y desplegar una nueva versión; no guardar el código en el repositorio público.
