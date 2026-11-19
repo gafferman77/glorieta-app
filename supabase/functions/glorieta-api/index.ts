@@ -85,6 +85,48 @@ Deno.serve(async req=>{
    const {data,error}=await db.rpc("glorieta_stock_change",{p_id:body.id,p_kind:kind,p_amount:amount,p_operator:operator,p_note:nullable(body.note,200)});
    if(error)throw error;return respond({product:(await enrich([data]))[0]});
   }
+
+  if(action==="remitos_list"){
+   const {data,error}=await db.from("glorieta_remitos").select("id,numero,solicitante_nombre,solicitante_apellido,destino,es_prestamo,estado,created_at,updated_at").order("created_at",{ascending:false}).limit(200);
+   if(error)throw error;return respond({remitos:data||[]});
+  }
+  if(action==="remito_get"){
+   const id=max(body.id,50);
+   if(!/^[0-9a-f-]{36}$/.test(id))throw Error("Identificador incorrecto");
+   const {data,error}=await db.from("glorieta_remitos").select("*").eq("id",id).single();
+   if(error)throw error;return respond({remito:data});
+  }
+  if(action==="remito_save"){
+   const p=body.remito||{};
+   const nombre=max(p.solicitante_nombre,100),apellido=max(p.solicitante_apellido,100),destino=max(p.destino,160);
+   const quien=max(p.operator,100);
+   if(!nombre||!apellido||!destino||!quien)throw Error("Completá nombre, apellido, destino y encargado");
+   if(!Array.isArray(p.items)||p.items.length>100)throw Error("Máximo 100 renglones");
+   const lines=p.items.map((row:any)=>{
+    const description=max(row.descripcion,180),unit=max(row.unidad,35)||"unidades";
+    const quantity=Number(row.cantidad);
+    if(!description||!Number.isFinite(quantity)||quantity<=0||quantity>1000000)throw Error("Revisá descripción y cantidad de cada renglón");
+    return {descripcion:description,cantidad:quantity,unidad:unit};
+   });
+   const payload={
+    solicitante_nombre:nombre,solicitante_apellido:apellido,destino,
+    responsable_retiro:nullable(p.responsable_retiro,120),es_prestamo:p.es_prestamo===true,
+    nota_original:max(p.nota_original,8000),texto_transcripto:max(p.texto_transcripto,8000),
+    items:lines,estado:p.estado==="preparado"?"preparado":"borrador",
+    updated_by:quien,updated_at:new Date().toISOString()
+   };
+   if(p.id){
+    const id=max(p.id,50),expected=max(p.expected_updated_at,70);
+    if(!/^[0-9a-f-]{36}$/.test(id)||!expected)throw Error("Faltan datos para editar");
+    const {data,error}=await db.from("glorieta_remitos").update(payload).eq("id",id).eq("updated_at",expected).select("*").maybeSingle();
+    if(error)throw error;
+    if(!data)throw Error("Este remito fue modificado desde otro dispositivo. Volvé a abrirlo antes de guardar.");
+    return respond({remito:data});
+   }
+   const {data,error}=await db.from("glorieta_remitos").insert({...payload,creado_por:quien}).select("*").single();
+   if(error)throw error;
+   return respond({remito:data});
+  }
   if(action==="upload_photo"){
    const original=String(body.data||"");
    const match=/^data:image\/(jpeg|png|webp);base64,([a-zA-Z0-9+/=]+)$/.exec(original);
