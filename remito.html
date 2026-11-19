@@ -1,0 +1,46 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#19242c"><meta name="robots" content="noindex,nofollow,noarchive"><title>Remito · GLORIETA</title><link rel="icon" type="image/svg+xml" href="./favicon.svg"><link rel="apple-touch-icon" href="./glorieta-icon-180.png">
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#17232b;background:#101820}*{box-sizing:border-box}
+body{margin:0}.toolbar{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:20px 12px}.toolbar button,.toolbar a{border:1px solid #647984;background:#263945;color:#eef5f8;padding:11px 17px;border-radius:8px;font-weight:700;cursor:pointer;text-decoration:none;font-size:14px}
+.toolbar .main{background:#b48130;border-color:#c99b54}
+.sheet{background:#fff;max-width:850px;margin:0 auto 35px;padding:38px 42px;min-height:930px;box-shadow:0 14px 38px #0006}
+.head{display:flex;gap:16px;align-items:center;justify-content:space-between;border-bottom:3px solid #203746;padding-bottom:17px}
+.brand{display:flex;gap:13px;align-items:center}.brand img{height:62px;width:62px;object-fit:contain}
+.brand h1{margin:0;font-size:25px;letter-spacing:.02em}.brand small{font-size:12px;color:#65737d}
+.no{text-align:right}.no strong{font-size:22px}.no small{display:block;font-size:12px;color:#65737d}
+h2{margin:24px 0 15px;font-size:18px;color:#1b303b}
+.meta{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin:23px 0}
+.field{border-bottom:1px solid #d3dbe0;padding-bottom:10px;font-size:14px;overflow-wrap:anywhere}
+.field label{display:block;color:#6b7c84;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px}
+.pill{display:inline-block;background:#e9f0f3;border:1px solid #b9cbd2;border-radius:5px;padding:6px 10px;font-size:12px;font-weight:700}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}th{background:#233945;color:#fff;text-align:left;padding:11px 9px}td{padding:12px 9px;border-bottom:1px solid #cdd8dd;vertical-align:top}th:nth-child(1),td:nth-child(1){width:16%}
+.note{background:#f4f6f7;border-left:3px solid #506a79;padding:14px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.5}
+.signature{margin-top:55px;display:grid;grid-template-columns:repeat(2,1fr);gap:40px}
+.sign{border-top:1px solid #6d818b;padding-top:9px;text-align:center;font-size:12px;color:#475d68}
+.disclaimer{font-size:11px;color:#6e7d84;margin-top:45px;line-height:1.5}.error{max-width:650px;color:#fff;text-align:center;padding:80px 20px;margin:auto}
+@media(max-width:640px){.sheet{padding:23px 17px;margin:0 9px 25px;min-height:700px}.brand img{width:45px;height:45px}.brand h1{font-size:18px}.no strong{font-size:15px}.meta{grid-template-columns:1fr;gap:10px}.signature{gap:17px}.toolbar button,.toolbar a{flex:1}}
+@media print{body{background:#fff}.toolbar{display:none}.sheet{box-shadow:none;margin:0;max-width:none;padding:15mm 13mm;min-height:0}.disclaimer{margin-top:25px}@page{size:A4;margin:8mm}}
+</style></head><body><div class="toolbar" id="toolbar"><button id="print" class="main" type="button">Imprimir / Guardar PDF</button><button id="share" type="button">Compartir enlace</button><button id="wa" type="button">WhatsApp</button></div><main id="sheet" class="sheet"><p>Cargando remito...</p></main>
+<script>
+const API="https://czvchpltqyjqyopiiinl.supabase.co/functions/v1/glorieta-remito";
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const n=x=>Number(x).toLocaleString("es-AR",{maximumFractionDigits:2});
+let remito=null;
+function show(r){
+ remito=r;const date=new Date(r.created_at).toLocaleDateString("es-AR");
+ const lines=Array.isArray(r.items)?r.items:[];
+ const tr=lines.map((p,i)=>'<tr><td>'+esc(p.cantidad)+' '+esc(p.unidad||"unidades")+'</td><td>'+esc(p.descripcion)+'</td></tr>').join("");
+ document.getElementById("sheet").innerHTML='<header class="head"><div class="brand"><img src="./glorieta-icon-192.png" alt="GLORIETA"><div><h1>GLORIETA</h1><small>PARQUE · Remito de materiales</small></div></div><div class="no"><strong>REM-'+String(r.numero).padStart(5,"0")+'</strong><small>'+esc(date)+'</small></div></header><div class="meta"><div class="field"><label>Solicitante</label>'+esc(r.solicitante_nombre+" "+r.solicitante_apellido)+'</div><div class="field"><label>Destino / lugar</label>'+esc(r.destino)+'</div><div class="field"><label>Responsable del retiro</label>'+esc(r.responsable_retiro||"Pendiente de completar")+'</div><div class="field"><label>Modalidad</label><span class="pill">'+(r.es_prestamo?"PRÉSTAMO · devolución abierta":"ENTREGA DE MATERIALES")+'</span></div></div><h2>Detalle solicitado</h2><table><thead><tr><th>Cantidad</th><th>Material</th></tr></thead><tbody>'+(tr||'<tr><td colspan="2">Pendiente de completar el detalle</td></tr>')+'</tbody></table>'+(r.nota_original?'<h2>Observaciones del pedido</h2><div class="note">'+esc(r.nota_original)+'</div>':'')+'<div class="signature"><div class="sign">Entrega · GLORIETA</div><div class="sign">Firma / conformidad de quien retira</div></div><p class="disclaimer">Documento de consulta generado por GLORIETA. Las cantidades de este remito no descuentan automáticamente el inventario. '+(r.es_prestamo?"Préstamo sin fecha de devolución establecida.":"")+'</p>';
+ document.title="Remito REM-"+String(r.numero).padStart(5,"0")+" · GLORIETA";
+}
+async function load(){
+ const id=new URLSearchParams(location.search).get("id");
+ if(!id){document.getElementById("sheet").innerHTML="<p>Falta el identificador del remito.</p>";return}
+ try{const x=await fetch(API+"?id="+encodeURIComponent(id),{cache:"no-store"});const d=await x.json();if(!x.ok)throw Error(d.error||"No disponible");show(d.remito)}
+ catch(e){document.getElementById("sheet").innerHTML='<p>No se pudo abrir el remito: '+esc(e.message)+'</p>'}
+}
+document.getElementById("print").onclick=()=>window.print();
+document.getElementById("share").onclick=async()=>{if(!remito)return;const title="Remito REM-"+String(remito.numero).padStart(5,"0");try{if(navigator.share)await navigator.share({title,text:"Remito GLORIETA",url:location.href});else{await navigator.clipboard.writeText(location.href);alert("Enlace copiado")}}catch(e){if(e.name!=="AbortError")alert("Copiá la dirección del navegador para compartir")}};
+document.getElementById("wa").onclick=()=>{if(!remito)return;const title="Remito GLORIETA REM-"+String(remito.numero).padStart(5,"0");window.open("https://wa.me/?text="+encodeURIComponent(title+"\n"+location.href),"_blank","noopener")};
+load();
+</script></body></html>
