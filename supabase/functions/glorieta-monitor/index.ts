@@ -20,7 +20,7 @@ Deno.serve(async req=>{
  if(origin && origin!==ALLOWED_ORIGIN)return reply({error:"Origen no permitido"},403);
  try {
   const {data,error}=await db.from("glorieta_products")
-   .select("code,name,quantity,unit,color,package_size,location,expiration_date,photo_path,updated_at")
+   .select("code,name,category,quantity,unit,color,package_size,location,expiration_date,photo_path,updated_at")
    .order("name",{ascending:true}).limit(1500);
   if(error)throw error;
   const products=await Promise.all((data||[]).map(async p=>{
@@ -29,7 +29,7 @@ Deno.serve(async req=>{
     const {data:link}=await db.storage.from("glorieta-photos").createSignedUrl(p.photo_path,900);
     photo_url=link?.signedUrl||null;
    }
-   return {code:p.code,name:p.name,quantity:Number(p.quantity),unit:p.unit,color:p.color,location:p.location,expiration_date:p.expiration_date,
+   return {code:p.code,name:p.name,category:p.category,quantity:Number(p.quantity),unit:p.unit,color:p.color,location:p.location,expiration_date:p.expiration_date,
     package_size:p.package_size,photo_url,updated_at:p.updated_at};
   }));
   return reply({products,updated_at:new Date().toISOString()});
