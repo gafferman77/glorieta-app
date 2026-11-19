@@ -1,12 +1,12 @@
 {
-  "name": "GLORIETA · Monitor de materiales",
-  "short_name": "Glorieta Monitor",
-  "description": "Consultar productos y cantidades disponibles, sin modificar datos",
+  "name": "MONITOR GLORIETA · Consulta",
+  "short_name": "Monitor Glorieta",
+  "description": "Catálogo público de materiales y cantidades, solo consulta",
   "start_url": "./monitor.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#183027",
-  "theme_color": "#183027",
+  "background_color": "#151e25",
+  "theme_color": "#19242c",
   "icons": [
     {
       "src": "./glorieta-icon-192.png",
@@ -20,5 +20,6 @@
       "type": "image/png",
       "purpose": "any"
     }
-  ]
+  ],
+  "id": "./glorieta-monitor"
 }
