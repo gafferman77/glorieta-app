@@ -43,7 +43,7 @@ function parsearNota(texto){
  return texto.split(/\n/).map(x=>x.trim()).filter(Boolean).filter(x=>!/^\s*(solicitante|destino|fecha|firma|responsable)\s*:/i.test(x)).slice(0,80).map(line=>{
   line=line.replace(/^[•\-*\s]+/,"").trim();
   let m=line.match(/^(\d+(?:[.,]\d+)?)\s*(?:x|×)?\s+(.+)$/i);
-  if(m)return{cantidad:m[1].replace(",","."),descripcion:m[2].trim(),unidad:"unidades"};
+  if(m){let desc=m[2].trim(),unit="unidades";const pieces=desc.match(/^(cajas|paquetes|frascos|pomos|resmas|rollos|litros|kg|unidades)\\s+(?:de\\s+)?(.+)$/i);if(pieces){unit=pieces[1].toLocaleLowerCase("es-AR");desc=pieces[2].trim()}return{cantidad:m[1].replace(",","."),descripcion:desc,unidad:unit}}
   m=line.match(/^(.+?)\s*[-:—]\s*(\d+(?:[.,]\d+)?)\s*(\w+)?$/);
   if(m)return{descripcion:m[1].trim(),cantidad:m[2].replace(",","."),unidad:remitoOpts.includes((m[3]||"").toLowerCase())?m[3].toLowerCase():"unidades"};
   return{descripcion:line,cantidad:"",unidad:"unidades"};
