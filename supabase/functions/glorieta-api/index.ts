@@ -103,6 +103,7 @@ Deno.serve(async req=>{
    const nombre=max(p.solicitante_nombre,100),apellido=max(p.solicitante_apellido,100),destino=max(p.destino,160);
    const quien=max(p.operator,100);
    if(!nombre||!apellido||!destino||!quien)throw Error("Completá nombre, apellido, destino y encargado");
+   if(!max(p.nota_original,8000)&&!nullable(p.nota_foto_path,160))throw Error("Adjuntá una nota o fotografía de origen");
    if(!Array.isArray(p.items)||p.items.length>100)throw Error("Máximo 100 renglones");
    const lines=p.items.map((row:any)=>{
     const description=max(row.descripcion,180),unit=max(row.unidad,35)||"unidades";
@@ -110,6 +111,7 @@ Deno.serve(async req=>{
     if(!description||!Number.isFinite(quantity)||quantity<=0||quantity>1000000)throw Error("Revisá descripción y cantidad de cada renglón");
     return {descripcion:description,cantidad:quantity,unidad:unit};
    });
+   if(p.estado==="preparado" && lines.length===0)throw Error("Para marcarlo preparado agregá al menos un material");
    const payload={
     solicitante_nombre:nombre,solicitante_apellido:apellido,destino,
     responsable_retiro:nullable(p.responsable_retiro,120),es_prestamo:p.es_prestamo===true,
