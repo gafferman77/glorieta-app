@@ -72,6 +72,31 @@ footer{border-top:1px solid #334650;padding:24px 0;margin-top:24px;text-align:ce
  .fields-list{grid-template-columns:1fr 1fr}.status-line{font-size:11px}
  .search-wrap .btn{flex:1}.search-wrap input{min-width:100%}
 }
+
+
+/* Remitos — formularios de gestión profesional */
+.remito-editor .remito-section{margin-top:22px;padding-top:20px;border-top:1px solid #43545c}
+.remito-editor .remito-section h3{font-size:17px;margin:0 0 12px}
+.remito-editor textarea{width:100%;resize:vertical;min-height:110px;margin:8px 0 0}
+.remito-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:10px 0 0}
+.remito-linea{display:grid;grid-template-columns:minmax(0,2fr) minmax(90px,.7fr) minmax(100px,.9fr) auto;gap:8px;align-items:end;background:#14222a;border:1px solid #415664;padding:11px;border-radius:8px;margin:11px 0}
+.remito-linea label{display:flex;flex-direction:column;font-size:11px;color:#a8bec5;gap:6px;font-weight:700}
+.remito-linea input,.remito-linea select{width:100%;min-width:0}
+.remito-remove{min-height:45px}
+.remitos-list{display:grid;gap:9px;margin-top:19px}
+.remito-record{display:flex;justify-content:space-between;gap:15px;align-items:center;text-align:left;color:#e9f1f2;background:#273740;border:1px solid #435964;border-radius:8px;padding:14px 15px;font:600 14px Inter,"DM Sans",Arial,sans-serif}
+.remito-record:hover{background:#31454f}
+.remito-record b{font-size:16px}
+.remito-record small{display:block;font-size:12px;color:#aec0c7;margin-top:7px}
+.remito-tag{font-size:11px;white-space:nowrap;background:#31483e;color:#a9e3c4;border-radius:5px;padding:7px 9px}
+.remito-photo{color:#d7b272;text-decoration:underline}
+.remito-editor .form-field small{font-weight:400;color:#97aab3}
+@media(max-width:700px){
+ .remito-linea{grid-template-columns:1fr 1fr;gap:10px}
+ .remito-linea label:first-child{grid-column:1/-1}
+ .remito-linea .remito-remove{grid-column:1/-1}
+ .remito-record{align-items:flex-start;flex-direction:column}
+}
 </style></head><body>
 <div class="app-frame"><div class="blackboard">
 <header class="masthead">
@@ -79,8 +104,8 @@ footer{border-top:1px solid #334650;padding:24px 0;margin-top:24px;text-align:ce
 <div><div class="tiny-chalk">PARQUE · GESTIÓN DE MATERIALES</div><h1>GLORIETA</h1><p>Administración de inventario · Acceso de encargados</p></div>
 </header>
 <div class="workarea"><div class="status-line"><span>🟢 <b>Inventario activo</b></span><span id="date-text"></span></div><div class="section-heading"><span class="scribble">Panel de administración</span></div>
-<nav class="tiles" aria-label="Secciones"><button class="tile active" data-view="inventory"><span class="tile-icon">▤</span><span>Inventario</span></button><button class="tile" data-view="add"><span class="tile-icon">＋</span><span>Cargar artículo</span></button><button class="tile" data-view="moves"><span class="tile-icon">↔</span><span>Movimientos</span></button><button class="tile" data-view="info"><span class="tile-icon">ⓘ</span><span>Acerca de</span></button></nav>
+<nav class="tiles" aria-label="Secciones"><button class="tile active" data-view="inventory"><span class="tile-icon">▤</span><span>Inventario</span></button><button class="tile" data-view="add"><span class="tile-icon">＋</span><span>Cargar artículo</span></button><button class="tile" data-view="moves"><span class="tile-icon">↔</span><span>Movimientos</span></button><button class="tile" data-view="remitos"><span class="tile-icon">▤</span><span>Remitos</span></button></nav>
 <main id="main-panel" aria-live="polite"></main>
 <footer>GLORIETA · Sistema interno de inventario · Solo personal autorizado</footer></div>
 </div></div>
-<div id="toast" role="status" aria-live="polite"></div><script src="cloud.js?v=10"></script></body></html>
+<div id="toast" role="status" aria-live="polite"></div><script src="cloud.js?v=11"></script><script src="remitos.js?v=1"></script></body></html>
