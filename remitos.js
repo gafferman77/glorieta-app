@@ -103,7 +103,18 @@ function abrirEditorRemito(data=null){
  $('interpretar-nota').onclick=interpretarNota;
  $('remito-add').onclick=()=>{capturarLineas();remitoLineas.push({descripcion:"",cantidad:"",unidad:"unidades"});lineasHtml();const all=document.querySelectorAll(".remito-desc");all[all.length-1]?.focus()};
  $('foto-remito').onchange=e=>{const file=e.target.files?.[0];if(!file)return;if(!file.type.startsWith("image/")){toast("Elegí una fotografía válida");return}remitoFotoNueva=file;remitoFotoEliminada=false;actualizarFotoRemito()};
- $('quitar-foto-remito').onclick=()=>{remitoFotoNueva=null;remitoFotoEliminada=true;$('foto-remito').value="";actualizarFotoRemito();toast("Foto quitada del remito. Guardá para confirmar el cambio.")};
+ $('quitar-foto-remito').onclick=()=>{
+  const nueva=Boolean(remitoFotoNueva);
+  remitoFotoNueva=null;$('foto-remito').value="";
+  if(nueva && remitoActual?.nota_foto_path && !remitoFotoEliminada){
+   actualizarFotoRemito();
+   toast("Selección descartada. Se conserva la foto previamente guardada.");
+   return;
+  }
+  remitoFotoEliminada=true;
+  actualizarFotoRemito();
+  toast("Foto quitada del remito. Guardá para confirmar el cambio.");
+ };
  actualizarFotoRemito();
  $('remito-ocr').onclick=leerFotoRemito;
  $('form-remito').onsubmit=guardarRemito;
