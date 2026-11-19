@@ -6,5 +6,13 @@
   "display": "standalone",
   "background_color": "#16251c",
   "theme_color": "#16251c",
-  "description": "Inventario Glorieta Beta V1"
+  "description": "Inventario Glorieta Beta V1",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
