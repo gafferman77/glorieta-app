@@ -122,7 +122,7 @@ async function guardarRemito(e){
  const noQty=draft.some(x=>!x.descripcion||!Number.isFinite(Number(x.cantidad))||Number(x.cantidad)<=0);
  if(noQty){toast("Revisá las cantidades y descripciones de los renglones");return}
  if(!form.get("solicitante_nombre")||!form.get("solicitante_apellido")||!form.get("destino")){toast("Completá los datos del solicitante y destino");return}
- if(!String($('nota-remito').value).trim()&&!remitoFotoNueva&&(!remitoActual?.nota_foto_path||remitoFotoEliminada)&&draft.length===0){toast("Completá una nota, foto o renglón antes de guardar");return}
+ // Se permite guardar un borrador aunque se quite su única foto por error.
  remitoBusy=true;const btn=$('guardar-remito');btn.disabled=true;btn.textContent="Guardando...";
  try{
   let photo=remitoFotoEliminada?null:(remitoActual?.nota_foto_path||null);
