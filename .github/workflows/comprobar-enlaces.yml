@@ -1,0 +1,28 @@
+name: Comprobar enlaces publicos Glorieta
+on:
+  push:
+    paths:
+      - '.github/workflows/comprobar-enlaces.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comprobar DNS y HTTP de Glorieta
+        shell: bash
+        run: |
+          echo "Fecha UTC: $(date -u)"
+          echo "Resolución DNS:"
+          getent hosts gafferman77.github.io || true
+          for u in \
+            "https://gafferman77.github.io/glorieta-app/" \
+            "https://gafferman77.github.io/glorieta-app/index.html" \
+            "https://gafferman77.github.io/glorieta-app/monitor.html" \
+            "https://gafferman77.github.io/glorieta-app/remito.html"; do
+            echo "---- $u"
+            curl -L -sS --max-time 25 -o /tmp/glorieta-response.html \
+              -w 'HTTP_CODE=%{http_code} URL_FINAL=%{url_effective} IP=%{remote_ip} REDIRECTS=%{num_redirects} CONTENT_TYPE=%{content_type}\\n' "$u" || echo "Falló CURL"
+            echo "Primeros bytes: $(head -c 130 /tmp/glorieta-response.html | tr '\\n' ' ')" || true
+          done
