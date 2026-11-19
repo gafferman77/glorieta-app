@@ -20,7 +20,7 @@ table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}th{backgr
 .disclaimer{font-size:11px;color:#6e7d84;margin-top:45px;line-height:1.5}.error{max-width:650px;color:#fff;text-align:center;padding:80px 20px;margin:auto}
 @media(max-width:640px){.sheet{padding:23px 17px;margin:0 9px 25px;min-height:700px}.brand img{width:45px;height:45px}.brand h1{font-size:18px}.no strong{font-size:15px}.meta{grid-template-columns:1fr;gap:10px}.signature{gap:17px}.toolbar button,.toolbar a{flex:1}}
 @media print{body{background:#fff}.toolbar{display:none}.sheet{box-shadow:none;margin:0;max-width:none;padding:15mm 13mm;min-height:0}.disclaimer{margin-top:25px}@page{size:A4;margin:8mm}}
-</style></head><body><div class="toolbar" id="toolbar"><button id="print" class="main" type="button">Imprimir / Guardar PDF</button><button id="share" type="button">Compartir enlace</button><button id="wa" type="button">WhatsApp</button></div><main id="sheet" class="sheet"><p>Cargando remito...</p></main>
+</style></head><body><div class="toolbar" id="toolbar"><a href="./monitor.html#remitos">← Volver al Monitor</a><button id="print" class="main" type="button">Imprimir / Guardar PDF</button><button id="share" type="button">Compartir enlace</button><button id="wa" type="button">WhatsApp</button></div><main id="sheet" class="sheet"><p>Cargando remito...</p></main>
 <script>
 const API="https://czvchpltqyjqyopiiinl.supabase.co/functions/v1/glorieta-remito";
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
