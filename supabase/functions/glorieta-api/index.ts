@@ -94,7 +94,9 @@ Deno.serve(async req=>{
    const id=max(body.id,50);
    if(!/^[0-9a-f-]{36}$/.test(id))throw Error("Identificador incorrecto");
    const {data,error}=await db.from("glorieta_remitos").select("*").eq("id",id).single();
-   if(error)throw error;return respond({remito:data});
+   if(error)throw error;
+   if(data.nota_foto_path){const {data:pic}=await db.storage.from("glorieta-photos").createSignedUrl(data.nota_foto_path,3600);data.nota_foto_url=pic?.signedUrl||null}
+   return respond({remito:data});
   }
   if(action==="remito_save"){
    const p=body.remito||{};
@@ -112,6 +114,7 @@ Deno.serve(async req=>{
     solicitante_nombre:nombre,solicitante_apellido:apellido,destino,
     responsable_retiro:nullable(p.responsable_retiro,120),es_prestamo:p.es_prestamo===true,
     nota_original:max(p.nota_original,8000),texto_transcripto:max(p.texto_transcripto,8000),
+    nota_foto_path:nullable(p.nota_foto_path,160),
     items:lines,estado:p.estado==="preparado"?"preparado":"borrador",
     updated_by:quien,updated_at:new Date().toISOString()
    };
