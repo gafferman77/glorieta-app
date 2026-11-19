@@ -63,8 +63,10 @@ Deno.serve(async req=>{
     });if(error)throw error;result=data;
    }else{
     if(!good(body.product.id))throw Error("Falta el ID");
-    const {data,error}=await db.rpc("glorieta_update_product",{
+    const {data,error}=await db.rpc("glorieta_edit_product",{
       p_id:body.product.id,p_code:p.code,p_name:p.name,p_unit:p.unit,p_operator:p.operator,
+      p_quantity:p.quantity,p_expected_quantity:Number(body.product.expected_quantity),
+      p_reason:nullable(body.product.correction_reason,200),
       p_color:p.color,p_package:p.package_size,p_expiration:p.expiration_date,p_location:p.location,p_notes:p.notes,
       p_photo_path:nullable(body.product.photo_path,160)
     });if(error)throw error;result=data;
