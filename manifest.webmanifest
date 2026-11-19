@@ -1,12 +1,12 @@
 {
-  "name": "GLORIETA | PARQUE",
+  "name": "GLORIETA · Administración",
   "short_name": "Glorieta",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#16251c",
-  "theme_color": "#16251c",
-  "description": "Inventario Glorieta Beta V1",
+  "background_color": "#151e25",
+  "theme_color": "#19242c",
+  "description": "Gestión y carga de inventario · acceso de encargados",
   "icons": [
     {
       "src": "./glorieta-icon-192.png",
@@ -26,5 +26,6 @@
       "type": "image/svg+xml",
       "purpose": "any"
     }
-  ]
+  ],
+  "id": "./glorieta-administracion"
 }
