@@ -132,6 +132,22 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
  .card-more{margin-top:9px}
 }
 
+
+.monitor-tabs{display:flex;gap:8px;margin-top:22px;border-bottom:1px solid #435965;padding-bottom:11px}
+.monitor-tab{border:1px solid #536873;border-radius:8px;padding:12px 18px;color:#d8e5e9;background:#263640;font-size:14px;font-weight:800;min-width:145px}
+.monitor-tab.active{border-color:#c79650;background:#b17d2e;color:#fff}
+.remitos-view{padding-top:1px}
+.remitos-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.remito-card{border:1px solid #465c69;border-radius:9px;background:#202e37;padding:17px;color:#ecf2f3;display:flex;flex-direction:column;gap:13px}
+.remito-number{color:#f1bd71;font-size:19px;font-weight:850}
+.remito-person{font-size:15px;font-weight:700;overflow-wrap:anywhere}
+.remito-place{font-size:12px;color:#a8bac1;margin-top:6px;overflow-wrap:anywhere}
+.remito-meta{font-size:11px;color:#a8bac1;display:flex;gap:9px;flex-wrap:wrap}
+.remito-action{display:inline-flex;justify-content:center;align-items:center;text-decoration:none;color:#fff;background:#ac782c;padding:11px 15px;border-radius:7px;font-size:13px;font-weight:800}
+.remito-action:hover{background:#ba883e}
+.remito-info{font-size:11px;color:#aebcc3;line-height:1.5}
+@media(max-width:680px){.monitor-tabs{margin-top:13px}.monitor-tab{flex:1;min-width:0;font-size:13px;padding:12px 10px}.remitos-cards{grid-template-columns:1fr}.remito-card{padding:14px}}
+
 </style></head>
 <body><div class="frame"><div class="board"><div class="content">
 <header class="head">
@@ -140,6 +156,10 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 <h1>MONITOR GLORIETA</h1><p class="subtitle">Catálogo de existencias · Sin acceso a edición</p></div>
 <div class="stamp">SOLO CONSULTA<small>Acceso público</small></div>
 </header>
+<nav class="monitor-tabs" aria-label="Secciones del Monitor">
+<button id="tab-catalog" type="button" class="monitor-tab active" aria-current="page">▤ Materiales</button>
+<button id="tab-remitos" type="button" class="monitor-tab">▣ Remitos</button>
+</nav>
 <div id="catalog-view">
 <div class="catalog-intro"><h2>Catálogo de materiales</h2><p>Buscá por nombre, categoría o inicial. Abrí un artículo para ver su foto grande y la cantidad disponible.</p></div>
 <div class="filters" aria-label="Filtrar por categoría">
@@ -159,17 +179,75 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 <div class="section-label"><span>Resultados</span><small id="filter-description">Todos los artículos</small></div><main class="cards" id="cards"><div class="empty">Consultando los materiales…</div></main>
 </div>
 <section id="detail-view" class="detail-view" aria-live="polite" hidden></section>
+<section id="remitos-view" class="remitos-view" hidden>
+ <div class="catalog-intro"><h2>Remitos preparados</h2><p>Consultá los remitos de GLORIETA y abrilos para compartir por WhatsApp o guardar como PDF. Solo se muestran los documentos listos para entregar.</p></div>
+ <div class="toolbar"><input id="remitos-search" class="search" type="search" placeholder="Buscar por número, solicitante o destino..." aria-label="Buscar remitos"><button id="remitos-refresh" class="sync" type="button">↻ Actualizar</button></div>
+ <div id="remitos-status" class="status" role="status" aria-live="polite">Consultando remitos...</div>
+ <div id="remitos-list" class="remitos-cards"><div class="empty">Cargando documentos...</div></div>
+</section>
 <footer class="footer">MONITOR GLORIETA · Catálogo de consulta · Actualización cada 60 segundos · Sin permisos de edición</footer>
 </div></div></div>
 <script>
 "use strict";
 const ENDPOINT="https://czvchpltqyjqyopiiinl.supabase.co/functions/v1/glorieta-monitor";
+const REMITO_ENDPOINT="https://czvchpltqyjqyopiiinl.supabase.co/functions/v1/glorieta-remito";
 const $=id=>document.getElementById(id);
 const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const numberFormat=new Intl.NumberFormat("es-AR",{maximumFractionDigits:2});
 let all=[],loading=false,category="Todas",letter="Todas";
+let currentSection="catalog",publicRemitos=[],remitosLoading=false,remitosLoaded=false;
 const categoryNames=["Todas","Deportes","Farmacia","Librería","Taller","Varios"];
 const letters=["Todas",..."ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"];
+function setTab(tab){
+ currentSection=tab;
+ const showRemitos=tab==="remitos";
+ $("tab-catalog").classList.toggle("active",!showRemitos);
+ $("tab-remitos").classList.toggle("active",showRemitos);
+ $("tab-catalog").setAttribute("aria-current",showRemitos?"false":"page");
+ $("tab-remitos").setAttribute("aria-current",showRemitos?"page":"false");
+ $("remitos-view").hidden=!showRemitos;
+ $("catalog-view").hidden=showRemitos;
+ $("detail-view").hidden=true;
+ if(showRemitos){
+  history.replaceState(null,"",location.pathname+location.search+"#remitos");
+  if(!remitosLoaded)loadPublicRemitos();
+  else paintPublicRemitos();
+ }else{
+  history.replaceState(null,"",location.pathname+location.search);
+  showCatalog();
+ }
+}
+function paintPublicRemitos(){
+ const needle=normalize($("remitos-search").value.trim());
+ const list=publicRemitos.filter(r=>[r.numero,"REM-"+String(r.numero).padStart(5,"0"),r.solicitante_nombre,r.solicitante_apellido,r.destino].some(x=>normalize(x).includes(needle)));
+ const root=$("remitos-list");
+ if(!list.length){root.innerHTML='<div class="empty">'+(publicRemitos.length?"No encontramos remitos con esa búsqueda.":"Todavía no hay remitos preparados para consultar.")+'</div>';return}
+ root.innerHTML=list.map(r=>{
+  const url="./remito.html?id="+encodeURIComponent(r.id);
+  const label="REM-"+String(r.numero).padStart(5,"0");
+  const date=new Date(r.created_at).toLocaleDateString("es-AR");
+  return '<article class="remito-card"><div><div class="remito-number">'+escapeHtml(label)+'</div><div class="remito-person">'+escapeHtml(r.solicitante_nombre+" "+r.solicitante_apellido)+'</div><div class="remito-place">Destino: '+escapeHtml(r.destino)+'</div></div><div class="remito-meta"><span>'+escapeHtml(date)+'</span><span>'+(r.es_prestamo?"Préstamo · devolución abierta":"Entrega de materiales")+'</span></div><a class="remito-action" href="'+escapeHtml(url)+'">Abrir remito · Compartir / PDF →</a><div class="remito-info">Documento de consulta. El enlace permite abrir el remito sin permisos de edición.</div></article>'
+ }).join("");
+}
+async function loadPublicRemitos(){
+ if(remitosLoading)return;
+ remitosLoading=true;
+ $("remitos-refresh").disabled=true;
+ $("remitos-status").textContent="Actualizando lista de remitos...";
+ try{
+  const resp=await fetch(REMITO_ENDPOINT+"?list=1",{cache:"no-store"});
+  if(!resp.ok)throw Error("No se pudo consultar el servidor");
+  const body=await resp.json();
+  if(!Array.isArray(body.remitos))throw Error("Respuesta no válida");
+  publicRemitos=body.remitos;remitosLoaded=true;
+  $("remitos-status").textContent="Lista de remitos preparados · Actualizada "+new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+  paintPublicRemitos();
+ }catch(e){
+  $("remitos-status").textContent=e.message;
+  if(!remitosLoaded)$("remitos-list").innerHTML='<div class="empty">No se pudieron cargar los remitos. Tocá «Actualizar» para reintentar.</div>';
+ }finally{remitosLoading=false;$("remitos-refresh").disabled=false}
+}
+
 function currentCode(){
  const m=location.hash.match(/^#producto=(.*)$/);
  if(!m)return null;
@@ -180,6 +258,7 @@ function detailFields(p){
  return vals.map(([label,value])=>'<div><dt>'+escapeHtml(label)+'</dt><dd>'+escapeHtml(value||"—")+'</dd></div>').join("");
 }
 function showDetail(code,focus=false){
+ currentSection="catalog";$("remitos-view").hidden=true;
  const p=all.find(x=>x.code===code);
  if(!p){showCatalog();return}
  $("catalog-view").hidden=true;
@@ -194,11 +273,14 @@ function showDetail(code,focus=false){
  if(focus){window.scrollTo(0,0);$("detail-back").focus({preventScroll:true})}
 }
 function showCatalog(focus=false){
+ if(currentSection==="remitos")return;
  $("detail-view").hidden=true;
  $("catalog-view").hidden=false;
  if(focus){window.scrollTo(0,0);$("search").focus({preventScroll:true})}
 }
 function syncRoute(){
+ if(location.hash==="#remitos"){currentSection="remitos";setTab("remitos");return}
+ if(currentSection==="remitos"){currentSection="catalog";setTab("catalog")}
  const code=currentCode();
  if(code && all.length)showDetail(code);
  else if(!code)showCatalog();
@@ -271,5 +353,10 @@ $("search").addEventListener("input",paint);
 
 $("refresh").addEventListener("click",refresh);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh()});
-refresh();setInterval(()=>{if(!document.hidden)refresh()},60000);
+$("tab-catalog").addEventListener("click",()=>setTab("catalog"));
+$("tab-remitos").addEventListener("click",()=>setTab("remitos"));
+$("remitos-search").addEventListener("input",paintPublicRemitos);
+$("remitos-refresh").addEventListener("click",loadPublicRemitos);
+refresh();if(location.hash==="#remitos")setTab("remitos");
+setInterval(()=>{if(!document.hidden){if(currentSection==="remitos")loadPublicRemitos();else refresh()}},60000);
 </script></body></html>
