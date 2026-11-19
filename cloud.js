@@ -44,6 +44,7 @@ function render(){
  if(view==='add'){form();return}
  if(view==='detail'){detail();return}
  if(view==='moves'){loadHistory();return}
+ if(view==='remitos'){showRemitos();return}
  $('main-panel').innerHTML='<section class="paper"><h2>✳ Acerca de Glorieta</h2><p>Inventario real compartido de PARQUE. Base central en Supabase y fotografías privadas.</p><p>Sesión actual: <b>'+esc(operator)+'</b></p><p class="mini">El código es compartido por dos encargados, y el nombre se declara manualmente. No equivale a una identificación individual verificada.</p><button class="btn btn-red" id="logout">Cerrar acceso de este dispositivo</button></section>';
  $('logout').onclick=()=>{sessionStorage.removeItem('glorieta_access');sessionStorage.removeItem('glorieta_operator');access='';operator='';items=[];login()};
 }
