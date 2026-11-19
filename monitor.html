@@ -65,6 +65,48 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
  .paper{padding:13px;min-height:114px}.thumb{width:68px;height:68px}
  .product-name{font-size:15px}.stock strong{font-size:25px}.tag{font-size:10px}
 }
+
+
+/* Ficha de consulta: foto grande, información al costado y navegación móvil */
+.paper{cursor:pointer;transition:border-color .15s,background .15s}
+.paper:hover,.paper:focus-visible{border-color:#d2a453;background:#293c48!important}
+.paper:focus-visible{outline:2px solid #dcb369;outline-offset:3px}
+.detail-view{margin:18px 0 8px}
+.detail-back{display:inline-flex;align-items:center;gap:9px;background:#263741;color:#f1f5f5;border:1px solid #637885;border-radius:8px;padding:12px 17px;font-weight:750;font-size:14px;margin:0 0 19px;cursor:pointer}
+.detail-back:hover{background:#344b58}
+.detail-panel{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:22px;align-items:start}
+.detail-image{background:#101a21;border:1px solid #485c68;border-radius:12px;min-height:300px;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.detail-image img{width:100%;height:100%;max-height:650px;object-fit:contain}
+.detail-placeholder{display:flex;flex-direction:column;align-items:center;gap:13px;color:#9cabb4}
+.detail-placeholder span{font-size:84px}
+.detail-placeholder small{font-size:13px}
+.detail-info{background:#202e38;border:1px solid #435864;border-radius:12px;padding:25px;min-height:300px}
+.detail-eyebrow{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#9eafb8;font-weight:800}
+.detail-info h2{font-weight:800;font-size:clamp(24px,4vw,33px);line-height:1.2;overflow-wrap:anywhere;color:#fff;margin:10px 0 21px}
+.detail-quantity{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;color:#a8eac6;padding:15px 0;border-top:1px solid #415764;border-bottom:1px solid #415764}
+.detail-quantity strong{font-size:clamp(35px,7vw,49px);line-height:1.1}
+.detail-quantity span{font-size:16px;font-weight:700}
+.detail-state{display:inline-block;margin:16px 0 3px;padding:7px 12px;border-radius:6px;font-weight:800;font-size:11px;letter-spacing:.03em;background:#254b38;border:1px solid #4b8162;color:#a6ebc5}
+.detail-state.zero{background:#4c2829;border-color:#884c49;color:#ffc2ba}
+.detail-state.low{background:#4d3b22;border-color:#89703d;color:#f7ce84}
+.detail-data{margin:12px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.detail-data>div{background:#16232b;border-radius:7px;padding:12px;min-width:0}
+.detail-data dt{color:#97a9b3;font-size:11px;margin-bottom:7px;font-weight:700}
+.detail-data dd{color:#eef4f4;font-size:14px;margin:0;font-weight:650;overflow-wrap:anywhere}
+.detail-hint{font-size:12px;color:#a6b8c0;line-height:1.5;margin:18px 0 0}
+[hidden]{display:none!important}
+@media(max-width:720px){
+ .detail-view{margin:13px 0}
+ .detail-back{margin-bottom:13px;width:100%;justify-content:center}
+ .detail-panel{grid-template-columns:1fr;gap:13px}
+ .detail-image{min-height:0;aspect-ratio:4/3}
+ .detail-image img{max-height:480px}
+ .detail-info{min-height:0;padding:18px}
+ .detail-info h2{font-size:23px}
+ .detail-data{gap:8px}
+ .detail-data>div{padding:10px}
+}
+
 </style></head>
 <body><div class="frame"><div class="board"><div class="content">
 <header class="head">
@@ -73,6 +115,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 <h1>MONITOR GLORIETA</h1><p class="subtitle">Catálogo de existencias · Sin acceso a edición</p></div>
 <div class="stamp">SOLO CONSULTA<small>Acceso público</small></div>
 </header>
+<div id="catalog-view">
 <div class="stats" aria-live="polite">
 <div class="stat"><span>Productos distintos</span><b id="total">—</b></div>
 <div class="stat"><span>Con existencias</span><b id="available">—</b></div>
@@ -85,6 +128,8 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 </div>
 <div class="status" id="status" role="status" aria-live="polite"><span class="dot"></span><span>Conectando con el inventario...</span></div>
 <div class="section-label"><span>Materiales disponibles</span><small>Información del inventario compartido</small></div><main class="cards" id="cards"><div class="empty">Consultando los materiales…</div></main>
+</div>
+<section id="detail-view" class="detail-view" aria-live="polite" hidden></section>
 <footer class="footer">MONITOR GLORIETA · Catálogo de consulta · Actualización cada 60 segundos · Sin permisos de edición</footer>
 </div></div></div>
 <script>
@@ -94,6 +139,46 @@ const $=id=>document.getElementById(id);
 const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const numberFormat=new Intl.NumberFormat("es-AR",{maximumFractionDigits:2});
 let all=[],availableOnly=false,loading=false;
+function currentCode(){
+ const m=location.hash.match(/^#producto=(.*)$/);
+ if(!m)return null;
+ try{return decodeURIComponent(m[1])}catch{return null}
+}
+function detailFields(p){
+ const vals=[["Código",p.code],["Color / variante",p.color],["Presentación",p.package_size],["Ubicación",p.location],["Vencimiento",p.expiration_date ? new Date(p.expiration_date+"T12:00:00").toLocaleDateString("es-AR") : "No informado"]];
+ return vals.map(([label,value])=>'<div><dt>'+escapeHtml(label)+'</dt><dd>'+escapeHtml(value||"—")+'</dd></div>').join("");
+}
+function showDetail(code,focus=false){
+ const p=all.find(x=>x.code===code);
+ if(!p){showCatalog();return}
+ $("catalog-view").hidden=true;
+ const box=$("detail-view");box.hidden=false;
+ const qty=Number(p.quantity)||0,zero=qty<=0,low=qty>0&&qty<=3;
+ const image=p.photo_url?'<img src="'+escapeHtml(p.photo_url)+'" alt="Foto ampliada de '+escapeHtml(p.name)+'" referrerpolicy="no-referrer">':'<div class="detail-placeholder"><span aria-hidden="true">📦</span><small>Este artículo todavía no tiene fotografía</small></div>';
+ box.innerHTML='<button type="button" class="detail-back" id="detail-back">← Volver al catálogo</button><div class="detail-panel"><div class="detail-image">'+image+'</div><div class="detail-info"><div class="detail-eyebrow">Ficha del material · Solo consulta</div><h2>'+escapeHtml(p.name)+'</h2><div class="detail-quantity"><strong>'+numberFormat.format(qty)+'</strong><span>'+escapeHtml(p.unit||"unidades")+' disponibles</span></div><span class="detail-state '+(zero?"zero":low?"low":"")+'">'+(zero?"SIN STOCK":low?"QUEDAN POCOS":"DISPONIBLE")+'</span><dl class="detail-data">'+detailFields(p)+'</dl><p class="detail-hint">Información del inventario de GLORIETA. Esta pantalla no permite modificar cantidades ni reservar productos.</p></div></div>';
+ $("detail-back").addEventListener("click",()=>{
+  history.pushState(null,"",location.pathname+location.search);
+  showCatalog(true);
+ });
+ if(focus){window.scrollTo(0,0);$("detail-back").focus({preventScroll:true})}
+}
+function showCatalog(focus=false){
+ $("detail-view").hidden=true;
+ $("catalog-view").hidden=false;
+ if(focus){window.scrollTo(0,0);$("search").focus({preventScroll:true})}
+}
+function syncRoute(){
+ const code=currentCode();
+ if(code && all.length)showDetail(code);
+ else if(!code)showCatalog();
+}
+function openDetail(code){
+ history.pushState({code},"","#producto="+encodeURIComponent(code));
+ showDetail(code,true);
+}
+window.addEventListener("popstate",syncRoute);
+window.addEventListener("hashchange",syncRoute);
+
 function paint(){
  const q=$("search").value.trim().toLocaleLowerCase("es-AR");
  const filtered=all.filter(p=>(!availableOnly||Number(p.quantity)>0)&&[p.name,p.color,p.package_size].some(value=>String(value||"").toLocaleLowerCase("es-AR").includes(q)));
@@ -105,7 +190,7 @@ function paint(){
   const node=document.createElement("div");node.className="empty";node.textContent=all.length?"No encontramos materiales con ese filtro.":"El inventario todavía está vacío.";frag.appendChild(node);
  }
  for(const p of filtered){
-  const el=document.createElement("article");el.className="paper";
+  const el=document.createElement("article");el.className="paper";el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label","Ver foto y detalles de "+p.name);el.addEventListener("click",()=>openDetail(p.code));el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openDetail(p.code)}});
   const isZero=Number(p.quantity)<=0,low=Number(p.quantity)>0&&Number(p.quantity)<=3;
   const image=p.photo_url?'<img loading="lazy" referrerpolicy="no-referrer" src="'+escapeHtml(p.photo_url)+'" alt="Foto del artículo">':"📦";
   el.innerHTML='<div class="item-top"><div class="thumb">'+image+'</div><div><h2 class="product-name">'+escapeHtml(p.name)+'</h2><div class="meta">'+escapeHtml([p.color,p.package_size].filter(Boolean).join(" · ")||"Material registrado")+'</div></div></div><div class="separator"></div><div class="stock"><strong>'+numberFormat.format(Number(p.quantity)||0)+'</strong><span class="unit">'+escapeHtml(p.unit||"unidades")+'</span><span class="tag '+(isZero?"zero":low?"low":"")+'">'+(isZero?"SIN STOCK":low?"QUEDAN POCOS":"DISPONIBLE")+'</span></div>';
@@ -131,7 +216,7 @@ async function refresh(){
   if(!res.ok)throw new Error("El servidor respondió "+res.status);
   const data=await res.json();
   if(!Array.isArray(data.products))throw Error("Respuesta incompleta");
-  all=data.products;paint();
+  all=data.products;paint();syncRoute();
   setStatus("Inventario actualizado · "+new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"})+" · Solo consulta");
  }catch(e){
   setStatus("No pudimos actualizar. "+(all.length?"Se muestran los últimos datos recibidos.":"Reintentá en unos segundos."),true);
