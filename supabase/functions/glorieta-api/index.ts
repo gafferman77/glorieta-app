@@ -31,7 +31,7 @@ async function enrich(items:any[]){
 function validItem(p:any){
  const name=max(p.name,100),code=max(p.code,40),qty=Number(p.quantity),unit=max(p.unit,30);
  if(!name||!code||!unit||!Number.isFinite(qty)||qty<0||qty>1000000)throw Error("Datos obligatorios inválidos");
- const category=max(p.category,30)||"Varios"; if(!["Deportes","Farmacia","Librería","Taller","Varios"].includes(category))throw Error("Categoría inválida"); return {name,code,quantity:qty,unit,category,operator:max(p.operator,100),color:nullable(p.color,80),package_size:nullable(p.package_size,80),expiration_date:p.expiration_date||null,location:nullable(p.location,120),notes:nullable(p.notes,500)};
+ const category=max(p.category,30)||"Varios"; if(!["Deportes","Farmacia","Librería","Taller","Juegos","Varios"].includes(category))throw Error("Categoría inválida"); return {name,code,quantity:qty,unit,category,operator:max(p.operator,100),color:nullable(p.color,80),package_size:nullable(p.package_size,80),expiration_date:p.expiration_date||null,location:nullable(p.location,120),notes:nullable(p.notes,500)};
 }
 Deno.serve(async req=>{
  if(req.method==="OPTIONS")return new Response(null,{headers});
