@@ -197,7 +197,7 @@ const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<
 const numberFormat=new Intl.NumberFormat("es-AR",{maximumFractionDigits:2});
 let all=[],loading=false,category="Todas",letter="Todas";
 let currentSection="catalog",publicRemitos=[],remitosLoading=false,remitosLoaded=false;
-const categoryNames=["Todas","Deportes","Farmacia","Librería","Taller","Varios"];
+const categoryNames=["Todas","Deportes","Farmacia","Librería","Taller","Juegos","Varios"];
 const letters=["Todas",..."ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"];
 function setTab(tab){
  currentSection=tab;
