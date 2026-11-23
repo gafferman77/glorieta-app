@@ -4,7 +4,7 @@
 let remitoActual=null,remitoFoto=null,remitoFotoNueva=null,remitoFotoEliminada=false,remitoLineas=[],remitoBusy=false;
 const remitoLink=id=>"https://gafferman77.github.io/glorieta-app/remito.html?id="+encodeURIComponent(id);
 const remitoNumero=n=>"REM-"+String(n).padStart(5,"0");
-const remitoOpts=["unidades","cajas","paquetes","frascos","pomos","resmas","rollos","litros","kg","otros"];
+const remitoOpts=["unidades","pares","cajas","paquetes","frascos","pomos","resmas","rollos","litros","kg","otros"];
 function remitoUnidades(u){return remitoOpts.map(x=>'<option value="'+esc(x)+'" '+(u===x?"selected":"")+'>'+esc(x)+'</option>').join("")}
 async function showRemitos(){
  $('main-panel').innerHTML='<section class="paper"><div class="row"><h2>Remitos</h2><button type="button" id="nuevo-remito" class="btn btn-green">+ Nuevo remito</button></div><p class="mini">Pedí materiales con una nota, revisá el detalle y generá un documento para compartir. Un remito no descuenta stock automáticamente.</p><div id="lista-remitos">Cargando remitos...</div></section>';
@@ -43,7 +43,7 @@ function parsearNota(texto){
  return texto.split(/\n/).map(x=>x.trim()).filter(Boolean).filter(x=>!/^\s*(solicitante|destino|fecha|firma|responsable)\s*:/i.test(x)).slice(0,80).map(line=>{
   line=line.replace(/^[•\-*\s]+/,"").trim();
   let m=line.match(/^(\d+(?:[.,]\d+)?)\s*(?:x|×)?\s+(.+)$/i);
-  if(m){let desc=m[2].trim(),unit="unidades";const pieces=desc.match(/^(cajas|paquetes|frascos|pomos|resmas|rollos|litros|kg|unidades)\s+(?:de\s+)?(.+)$/i);if(pieces){unit=pieces[1].toLocaleLowerCase("es-AR");desc=pieces[2].trim()}return{cantidad:m[1].replace(",","."),descripcion:desc,unidad:unit}}
+  if(m){let desc=m[2].trim(),unit="unidades";const pieces=desc.match(/^(pares|cajas|paquetes|frascos|pomos|resmas|rollos|litros|kg|unidades)\s+(?:de\s+)?(.+)$/i);if(pieces){unit=pieces[1].toLocaleLowerCase("es-AR");desc=pieces[2].trim()}return{cantidad:m[1].replace(",","."),descripcion:desc,unidad:unit}}
   m=line.match(/^(.+?)\s*[-:—]\s*(\d+(?:[.,]\d+)?)\s*(\w+)?$/);
   if(m)return{descripcion:m[1].trim(),cantidad:m[2].replace(",","."),unidad:remitoOpts.includes((m[3]||"").toLowerCase())?m[3].toLowerCase():"unidades"};
   return{descripcion:line,cantidad:"",unidad:"unidades"};
