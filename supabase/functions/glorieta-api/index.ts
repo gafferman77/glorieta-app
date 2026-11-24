@@ -8,7 +8,7 @@ const unauthorized = () => respond({error:"Código de acceso incorrecto"},401);
 const max = (value:unknown,n:number)=>String(value??"").trim().slice(0,n);
 const nullable = (value:unknown,n:number)=>max(value,n)||null;
 const good = (value:unknown)=>typeof value==="string" && value.length>=1;
-const ERROR = (err: unknown) => err instanceof Error ? err.message : "Error desconocido";
+const ERROR = (err: unknown) => { if (err instanceof Error) return err.message; if (err && typeof err === "object" && "message" in err && typeof (err as {message?:unknown}).message === "string") return String((err as {message:string}).message); return "No se pudo completar la operación. Intentá nuevamente."; };
 async function auth(req:Request){
  const got=req.headers.get("x-glorieta-key")||"";
  if(got.length<16||got.length>128)return false;
