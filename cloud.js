@@ -49,6 +49,25 @@ function render(){
  $('logout').onclick=()=>{sessionStorage.removeItem('glorieta_access');sessionStorage.removeItem('glorieta_operator');access='';operator='';items=[];login()};
 }
 async function compress(file){return new Promise((resolve,reject)=>{const r=new FileReader;r.onerror=reject;r.onload=()=>{const im=new Image;im.onerror=reject;im.onload=()=>{const scale=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*scale));c.height=Math.max(1,Math.round(im.height*scale));c.getContext('2d').drawImage(im,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',.7))};im.src=r.result};r.readAsDataURL(file)})}
+function normalizedArticleName(value){
+ return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
+  .replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(Boolean)
+  .map(w=>w.length>4&&w.endsWith('es')?w.slice(0,-2):w.length>3&&w.endsWith('s')?w.slice(0,-1):w)
+  .sort().join(' ');
+}
+function existingNameMatches(name){
+ const norm=normalizedArticleName(name);
+ if(!norm)return [];
+ const tokens=new Set(norm.split(' '));
+ return items.filter(p=>{
+  const old=normalizedArticleName(p.name);
+  if(!old)return false;
+  if(old===norm)return true;
+  const other=new Set(old.split(' '));
+  const overlap=[...tokens].filter(x=>other.has(x)).length;
+  return overlap>=2&&overlap/Math.max(tokens.size,other.size)>=.8;
+ }).slice(0,3);
+}
 async function reviewPhotoForDuplicates(photo){
  if(editing||!window.GlorietaVisual)return;
  let panel=$('visual-review');
@@ -72,7 +91,14 @@ function form(){const p=editing?items.find(x=>x.id===editing):null;imageData=p?.
  '<label class="form-field">Unidad *<select name="unit">'+['unidades','pares','cajas','paquetes','frascos','pomos','resmas','rollos','litros','kg','otros'].map(x=>'<option '+(p?.unit===x?'selected':'')+'>'+x+'</option>').join('')+'</select></label><label class="form-field">Color / variante<input name="color" maxlength="80" value="'+esc(p?.color||'')+'" placeholder="Rojo, blanco, varios"></label><label class="form-field">Presentación<input name="package_size" maxlength="80" value="'+esc(p?.package_size||'')+'" placeholder="250 ml / 100 g"></label><label class="form-field">Fecha de vencimiento<input type="date" name="expiration_date" value="'+esc(p?.expiration_date||'')+'"></label><label class="form-field">Ubicación<input name="location" maxlength="120" value="'+esc(p?.location||'')+'"></label><label class="form-field full">Observaciones<textarea name="notes" rows="2" maxlength="500">'+esc(p?.notes||'')+'</textarea></label></div><div class="form-actions"><button type="submit" class="btn btn-green" id="submit-product">💾 Guardar en la nube</button><button type="button" class="btn btn-soft" id="cancel">Cancelar</button></div></form></section>';
  $('preview').onclick=()=>$('photo').click();$('cancel').onclick=()=>nav('inventory');
  $('photo').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;if(!file.type.startsWith('image/')){toast('Elegí una imagen');return}try{imageData=await compress(file);imageIsNew=true;if(imageData.length>1350000)throw Error('La foto es demasiado grande');$('preview').innerHTML='<img src="'+esc(imageData)+'" alt="Vista previa">';if(!p)reviewPhotoForDuplicates(imageData)}catch(err){imageIsNew=false;toast(err.message||'No se pudo procesar la foto')}};
- $('product-form').onsubmit=async e=>{e.preventDefault();if(busy)return;const fd=new FormData(e.target),p2=Object.fromEntries(fd.entries());p2.operator=operator;if(p)p2.id=p.id;p2.quantity=Number(p2.quantity);if(p)p2.expected_quantity=Number(p.quantity);if(p && p2.quantity!==Number(p.quantity) && String(p2.correction_reason||'').trim().length<3){toast('Para cambiar la cantidad, escribí el motivo de corrección (mínimo 3 caracteres). Si solo editás la categoría u otros datos, dejá la cantidad original.');const motivo=e.target.elements.namedItem('correction_reason');motivo?.focus();return}busy=true;$('submit-product').disabled=true;$('submit-product').textContent='Guardando...';try{
+ $('product-form').onsubmit=async e=>{e.preventDefault();if(busy)return;const fd=new FormData(e.target),p2=Object.fromEntries(fd.entries());p2.operator=operator;if(p)p2.id=p.id;p2.quantity=Number(p2.quantity);if(p)p2.expected_quantity=Number(p.quantity);if(!p){
+ const existing=existingNameMatches(p2.name);
+ if(existing.length){
+  const names=existing.map(x=>x.name+' ('+x.category+', stock '+fmt(x.quantity)+' '+x.unit+')').join('\\n');
+  if(!window.confirm('ATENCIÓN: este artículo podría estar cargado.\\n\\n'+names+'\\n\\nCancelá para revisar la ficha existente. Aceptá SOLO si verificaste que es un artículo diferente.'))return;
+ }
+}
+if(p && p2.quantity!==Number(p.quantity) && String(p2.correction_reason||'').trim().length<3){toast('Para cambiar la cantidad, escribí el motivo de corrección (mínimo 3 caracteres). Si solo editás la categoría u otros datos, dejá la cantidad original.');const motivo=e.target.elements.namedItem('correction_reason');motivo?.focus();return}busy=true;$('submit-product').disabled=true;$('submit-product').textContent='Guardando...';try{
   if(imageIsNew){const uploaded=await api('upload_photo',{data:imageData});p2.photo_path=uploaded.path}
   await api(p?'update':'create',{product:p2});const d=await api('list');items=d.products||[];selected=items.find(x=>x.code===p2.code)?.id||null;view=selected?'detail':'inventory';toast('Artículo guardado y compartido');render()
  }catch(err){toast('No se pudo guardar: '+err.message);$('submit-product').disabled=false;$('submit-product').textContent='💾 Guardar en la nube'}finally{busy=false}};
