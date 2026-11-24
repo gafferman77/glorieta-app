@@ -21,7 +21,7 @@ window.GlorietaVisual=(()=>{
   const candidates=products.filter(p=>p.id!==excluded&&p.photo_url);
   const out=[];let cursor=0;const workers=Array.from({length:4},async()=>{while(cursor<candidates.length){const p=candidates[cursor++];try{
    let sig=cache.get(p.photo_url);if(!sig){sig=await signature(p.photo_url,true);cache.set(p.photo_url,sig)}
-   const similarity=score(base,sig);if(similarity>=.78)out.push({product:p,similarity});
+   const similarity=score(base,sig);if(similarity>=.70)out.push({product:p,similarity});
   }catch{/* Una imagen sin permiso CORS no impide cargar el artículo. */}
   }});
   await Promise.all(workers);
