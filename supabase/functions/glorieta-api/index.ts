@@ -42,6 +42,7 @@ Deno.serve(async req=>{
  if(contentLength>1600000)return respond({error:"Solicitud demasiado grande"},413);
  try{
   const body=await req.json(), action=max(body.action,30);
+  if(action==="ping")return respond({ok:true});
   if(action==="list"){
    const {data,error}=await db.from("glorieta_products").select("*").is("archived_at",null).order("name").limit(1000);
    if(error)throw error;
