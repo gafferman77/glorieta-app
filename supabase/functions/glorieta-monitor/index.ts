@@ -21,7 +21,7 @@ Deno.serve(async req=>{
  try {
   const {data,error}=await db.from("glorieta_products")
    .select("code,name,category,quantity,unit,color,package_size,location,expiration_date,photo_path,updated_at")
-   .order("name",{ascending:true}).limit(1500);
+   .is("archived_at",null).order("name",{ascending:true}).limit(1500);
   if(error)throw error;
   const products=await Promise.all((data||[]).map(async p=>{
    let photo_url=null;
