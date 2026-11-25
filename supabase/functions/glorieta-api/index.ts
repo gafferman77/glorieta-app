@@ -153,12 +153,14 @@ Deno.serve(async req=>{
   if(action==="pedido_entregar"){
    const id=max(body.id,50),who=max(body.operator,100),retira=nullable(body.responsable_retiro,120);
    if(!/^[0-9a-f-]{36}$/i.test(id)||!who)throw Error("Pedido o encargado incorrecto");
-   const {data,error}=await db.rpc("glorieta_entregar_pedido",{p_pedido_id:id,p_operator:who,p_retirado_por:retira});
+   const autorizador=max(body.autorizado_por,100);
+   if(!["Gabriel Carrizo","Yamila Fernández","Fabián Cabrera"].includes(autorizador))throw Error("Seleccioná quién autoriza la salida");
+   const {data,error}=await db.rpc("glorieta_entregar_pedido",{p_pedido_id:id,p_operator:who,p_retirado_por:retira,p_autorizado_por:autorizador});
    if(error)throw error;
    return respond({remito_id:data});
   }
   if(action==="remitos_list"){
-   const {data,error}=await db.from("glorieta_remitos").select("id,numero,solicitante_nombre,solicitante_apellido,destino,es_prestamo,estado,created_at,updated_at").order("created_at",{ascending:false}).limit(200);
+   const {data,error}=await db.from("glorieta_remitos").select("id,numero,solicitante_nombre,solicitante_apellido,destino,autorizado_por,es_prestamo,estado,created_at,updated_at").order("created_at",{ascending:false}).limit(200);
    if(error)throw error;return respond({remitos:data||[]});
   }
   if(action==="remito_get"){
@@ -173,6 +175,9 @@ Deno.serve(async req=>{
    const p=body.remito||{};
    const nombre=max(p.solicitante_nombre,100),apellido=max(p.solicitante_apellido,100),destino=max(p.destino,160);
    const quien=max(p.operator,100);
+   const autorizador=max(p.autorizado_por,100);
+   if(autorizador&&!["Gabriel Carrizo","Yamila Fernández","Fabián Cabrera"].includes(autorizador))throw Error("Autorizante no válido");
+   if(p.estado==="preparado"&&!autorizador)throw Error("Para preparar el remito seleccioná quién autoriza la salida");
    if(!nombre||!apellido||!destino||!quien)throw Error("Completá nombre, apellido, destino y encargado");
    // Los borradores pueden quedar sin foto ni nota mientras se corrige una carga equivocada.
    if(!Array.isArray(p.items)||p.items.length>100)throw Error("Máximo 100 renglones");
@@ -185,7 +190,7 @@ Deno.serve(async req=>{
    if(p.estado==="preparado" && lines.length===0)throw Error("Para marcarlo preparado agregá al menos un material");
    const payload={
     solicitante_nombre:nombre,solicitante_apellido:apellido,destino,
-    responsable_retiro:nullable(p.responsable_retiro,120),es_prestamo:p.es_prestamo===true,
+    responsable_retiro:nullable(p.responsable_retiro,120),autorizado_por:autorizador||null,es_prestamo:p.es_prestamo===true,
     nota_original:max(p.nota_original,8000),texto_transcripto:max(p.texto_transcripto,8000),
     nota_foto_path:nullable(p.nota_foto_path,160),
     items:lines,estado:p.estado==="preparado"?"preparado":"borrador",
