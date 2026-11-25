@@ -55,10 +55,11 @@ Deno.serve(async req=>{
    const id=max(body.id,60),who=max(body.operator,100);
    if(!/^[0-9a-f-]{36}$/i.test(id)||!who)throw Error("Artículo o encargado incorrecto");
    const archived=action==="archive";
-   const {data,error}=await db.from("glorieta_products")
+   let update=db.from("glorieta_products")
      .update({archived_at:archived?new Date().toISOString():null,archived_by:archived?who:null})
-     .eq("id",id)[archived?"is":"not"]("archived_at","is",archived?null:"null")
-     .select("id,name,code,archived_at").maybeSingle();
+     .eq("id",id);
+   update=archived?update.is("archived_at",null):update.not("archived_at","is","null");
+   const {data,error}=await update.select("id,name,code,archived_at").maybeSingle();
    if(error)throw error;
    if(!data)throw Error("El artículo fue modificado o ya no está en ese estado. Actualizá la lista.");
    return respond({product:data});
