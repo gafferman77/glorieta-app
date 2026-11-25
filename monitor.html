@@ -159,28 +159,75 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 .cart-fields input,.cart-fields select,.cart-fields textarea{width:100%;border:1px solid #526b78;color:#fff;background:#111b23;border-radius:7px;padding:12px}
 .cart-notice{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#e2f3e9;color:#152720;padding:12px 18px;border-radius:10px;z-index:25;box-shadow:0 8px 24px #0009}
 @media(max-width:700px){.cart-fields{grid-template-columns:1fr}.monitor-tab{min-width:0;padding:10px 7px;font-size:12px}.monitor-tabs{gap:5px}}
+
+/* Inicio MONITOR GLORIETA: identidad de la app y categorías actuales */
+body{background:#001a2c}.frame{background:linear-gradient(150deg,#021d32,#00233a 58%,#001a2d)}.board{background:transparent}.content{padding:0 22px 35px}
+.head{display:grid;grid-template-columns:48px 1fr 48px;text-align:center;align-items:start;gap:8px;justify-items:center;border:0;padding:20px 0 11px;flex-wrap:nowrap}
+.head-copy{min-width:0;display:flex;flex-direction:column;align-items:center}
+.head .brand-logo{width:clamp(99px,18vw,136px);height:clamp(99px,18vw,136px);border-radius:50%;padding:0;border:3px solid #fff;background:#eef5f6;box-shadow:0 7px 25px #0007}
+.head h1{font-size:clamp(30px,7vw,49px);letter-spacing:.065em;margin:7px 0 0;font-weight:800}
+.brand-stroke{width:min(72%,280px);height:5px;background:linear-gradient(90deg,#ffdd2c,#f2a323);border-radius:90% 90% 30% 30%;transform:rotate(-1deg);margin:3px auto 7px}
+.head .subtitle{font-size:clamp(16px,3.6vw,25px);font-weight:700;letter-spacing:.18em;color:#f0f5f6;margin:0}
+.home-icon{background:transparent;border:0;font-size:32px;color:#fff;min-width:42px;min-height:48px;cursor:pointer}
+.head.compact{padding:8px 0}.head.compact .brand-logo{width:55px;height:55px}.head.compact h1{font-size:24px;margin:0}.head.compact .brand-stroke{height:3px;margin:2px auto}.head.compact .subtitle{font-size:11px}
+.home-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:23px 0 30px}
+.home-action{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-width:0;min-height:clamp(138px,23vw,194px);padding:15px 8px;border-radius:19px;border:2px solid #13d8c7;background:linear-gradient(140deg,#00857a,#00463e);color:#fff;box-shadow:0 9px 20px #0006;font-size:clamp(17px,4vw,27px);font-weight:800}
+.home-action-icon{font-size:clamp(42px,8vw,70px);line-height:1}
+.home-remitos{border-color:#46b7ff;background:linear-gradient(140deg,#0862b1,#08366e)}
+.home-action:hover,.home-category:hover,.home-all:hover{filter:brightness(1.12)}
+.home-section-heading{display:flex;align-items:center;gap:15px;justify-content:center;margin:8px 0 17px;color:#fff;font-size:clamp(17px,4vw,24px);letter-spacing:.05em}
+.home-section-heading:before,.home-section-heading:after{content:"";height:1px;background:#8497a4;flex:1}
+.home-categories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.home-category{display:flex;flex-direction:column;gap:9px;align-items:center;justify-content:center;min-height:clamp(107px,18vw,149px);border-radius:17px;border:2px solid #44b9f6;color:#fff;background:linear-gradient(140deg,#11619b,#074070);font-weight:800;font-size:clamp(12px,2.7vw,18px)}
+.home-category span{font-size:clamp(37px,6.7vw,58px);line-height:1}
+.cat-farmacia{background:linear-gradient(135deg,#753fa3,#41276d);border-color:#c28ae6}
+.cat-libreria{background:linear-gradient(135deg,#bf6815,#834312);border-color:#ffbc62}
+.cat-taller{background:linear-gradient(135deg,#128f73,#075c4e);border-color:#3ce6c4}
+.cat-juegos{background:linear-gradient(135deg,#a23978,#672754);border-color:#eb79ba}
+.cat-varios{background:linear-gradient(135deg,#414d93,#272f66);border-color:#8b99ef}
+.home-all{display:block;margin:23px auto 9px;border:1px solid #8fa9b8;background:#213c4c;color:#fff;border-radius:9px;padding:12px 19px;font-weight:800}
+#monitor-section-back{margin:15px 0 0}
+#monitor-section-back .detail-back{margin:0}
+.footer{display:flex;flex-direction:column;gap:5px;align-items:center;border-top:1px solid #7895a4;color:#d8e4ec;font-size:clamp(11px,2.6vw,15px);margin-top:38px;padding:19px 0 26px}
+.footer strong{font-size:clamp(20px,4vw,28px);color:#fff}.footer em{margin-top:7px;font-size:clamp(10px,2.4vw,13px)}
+@media(max-width:650px){.content{padding:0 12px 30px}.head{grid-template-columns:37px 1fr 37px}.head .brand-logo{width:106px;height:106px}.head h1{font-size:34px}.home-actions{gap:10px}.home-action{min-height:133px}.home-categories{gap:8px}.home-category{min-height:109px;border-radius:13px}.home-category span{font-size:40px}}
 </style></head>
-<body<div class="frame"><div class="board"><div class="content">
-<header class="head">
-<img class="brand-logo" src="./glorieta-icon-192.png" alt="Logo Glorieta">
-<div class="head-copy"><div class="eyebrow">PARQUE · CONSULTA DE MATERIALES</div>
-<h1>MONITOR GLORIETA</h1><p class="subtitle">Catálogo de existencias · Sin acceso a edición</p></div>
-<div class="stamp">SOLO CONSULTA<small>Acceso público</small></div>
+<body><div class="frame"><div class="board"><div class="content">
+<header class="head" id="monitor-header">
+<button type="button" class="home-icon" id="monitor-home" aria-label="Volver al inicio">☰</button>
+<div class="head-copy">
+<img class="brand-logo" src="./glorieta-icon-192.png" alt="Logo original del edificio de GLORIETA">
+<h1>GLORIETA</h1><div class="brand-stroke" aria-hidden="true"></div><p class="subtitle">MONITOR</p>
+</div>
+<button type="button" class="home-icon" id="monitor-help" aria-label="Información del Monitor">☉</button>
 </header>
-<nav class="monitor-tabs" aria-label="Secciones del Monitor">
+<section id="home-view" class="home-view" aria-label="Inicio de Monitor Glorieta">
+<div class="home-actions">
+<button type="button" class="home-action home-cart" id="go-cart"><span class="home-action-icon" aria-hidden="true">🛒</span><span>Carrito <small id="home-cart-count"></small></span></button>
+<button type="button" class="home-action home-remitos" id="go-remitos"><span class="home-action-icon" aria-hidden="true">▤</span><span>Remitos</span></button>
+</div>
+<h2 class="home-section-heading"><span>CATEGORÍAS</span></h2>
+<div class="home-categories" id="home-categories">
+<button class="home-category cat-deportes" data-category="Deportes" type="button"><span aria-hidden="true">⚽</span>Deportes</button>
+<button class="home-category cat-farmacia" data-category="Farmacia" type="button"><span aria-hidden="true">✚</span>Farmacia</button>
+<button class="home-category cat-libreria" data-category="Librería" type="button"><span aria-hidden="true">✎</span>Librería</button>
+<button class="home-category cat-taller" data-category="Taller" type="button"><span aria-hidden="true">⚒</span>Taller</button>
+<button class="home-category cat-juegos" data-category="Juegos" type="button"><span aria-hidden="true">♟</span>Juegos</button>
+<button class="home-category cat-varios" data-category="Varios" type="button"><span aria-hidden="true">•••</span>Varios</button>
+</div>
+<button id="go-all" type="button" class="home-all">Ver todos los artículos y buscar →</button>
+</section>
+<nav class="monitor-tabs" aria-label="Secciones del Monitor" hidden>
 <button id="tab-catalog" type="button" class="monitor-tab active" aria-current="page">▤ Materiales</button>
 <button id="tab-remitos" type="button" class="monitor-tab">▣ Remitos</button>
 <button id="tab-cart" type="button" class="monitor-tab">🛒 Carrito<span id="cart-count"></span></button>
 </nav>
-<div id="catalog-view">
-<div class="catalog-intro"><h2>Catálogo de materiales</h2><p>Buscá por nombre, categoría o inicial. Abrí un artículo para ver su foto grande y la cantidad disponible.</p></div>
+<div id="monitor-section-back" hidden><button id="monitor-back" class="detail-back" type="button">← Inicio</button></div>
+<div id="catalog-view" hidden>
+<div class="catalog-intro"><h2>Catálogo de materiales</h2><p>Buscá por nombre o categoría. Abrí un artículo para ver su fotografía y la cantidad disponible.</p></div>
 <div class="filters" aria-label="Filtrar por categoría">
 <div class="filters-title">Categorías</div>
 <div class="category-bar" id="categories" role="group" aria-label="Categorías de materiales"></div>
-</div>
-<div class="filters" aria-label="Buscar por inicial">
-<div class="filters-title">Abecedario</div>
-<div class="alphabet-bar" id="alphabet" role="group" aria-label="Inicial del producto"></div>
 </div>
 <div class="toolbar">
 <input class="search" type="search" id="search" placeholder="Buscar material o color..." aria-label="Buscar productos">
@@ -218,8 +265,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
  <div id="remitos-status" class="status" role="status" aria-live="polite">Consultando remitos...</div>
  <div id="remitos-list" class="remitos-cards"><div class="empty">Cargando documentos...</div></div>
 </section>
-<footer class="footer">MONITOR GLORIETA · Catálogo de consulta · Actualización cada 60 segundos · Sin permisos de edición<br>
-<span>App realizada por Mario Farias y gestionada por Gabriel Carrizo.</span></footer>
+<footer class="footer"><strong>GLORIETA</strong><span>MONITOR · Sistema interno de solicitudes de materiales.</span><span>Solo personal autorizado para gestionar los pedidos.</span><em>Creado por Mario Farías – Administrado por Gabriel Carrizo.</em></footer>
 </div></div></div>
 <script>
 "use strict";
@@ -228,29 +274,36 @@ const REMITO_ENDPOINT="https://czvchpltqyjqyopiiinl.supabase.co/functions/v1/glo
 const $=id=>document.getElementById(id);
 const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const numberFormat=new Intl.NumberFormat("es-AR",{maximumFractionDigits:2});
-let all=[],loading=false,category="Todas",letter="Todas";
-let currentSection="catalog",publicRemitos=[],remitosLoading=false,remitosLoaded=false;
+let all=[],loading=false,category="Todas";
+let currentSection="home",publicRemitos=[],remitosLoading=false,remitosLoaded=false;
 const categoryNames=["Todas","Deportes","Farmacia","Librería","Taller","Juegos","Varios"];
-const letters=["Todas",..."ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"];
+
 function setTab(tab){
  window.GlorietaCart?.hide();
  currentSection=tab;
- const showRemitos=tab==="remitos";
- $("tab-catalog").classList.toggle("active",!showRemitos);
- $("tab-remitos").classList.toggle("active",showRemitos);
- $("tab-catalog").setAttribute("aria-current",showRemitos?"false":"page");
- $("tab-remitos").setAttribute("aria-current",showRemitos?"page":"false");
- $("remitos-view").hidden=!showRemitos;
- $("catalog-view").hidden=showRemitos;
+ const isHome=tab==="home",isRemitos=tab==="remitos",isCatalog=tab==="catalog";
+ $("home-view").hidden=!isHome;
+ $("monitor-section-back").hidden=isHome;
+ $("monitor-header").classList.toggle("compact",!isHome);
+ $("remitos-view").hidden=!isRemitos;
+ $("catalog-view").hidden=!isCatalog;
  $("detail-view").hidden=true;
- if(showRemitos){
-  history.replaceState(null,"",location.pathname+location.search+"#remitos");
-  if(!remitosLoaded)loadPublicRemitos();
-  else paintPublicRemitos();
- }else{
-  history.replaceState(null,"",location.pathname+location.search);
-  showCatalog();
- }
+ $("tab-catalog").classList.toggle("active",isCatalog);
+ $("tab-remitos").classList.toggle("active",isRemitos);
+ $("tab-catalog").setAttribute("aria-current",isCatalog?"page":"false");
+ $("tab-remitos").setAttribute("aria-current",isRemitos?"page":"false");
+ if(isRemitos){if(!remitosLoaded)loadPublicRemitos();else paintPublicRemitos()}
+ if(isCatalog){paint();showCatalog()}
+ window.scrollTo(0,0);
+}
+function home(){
+ history.replaceState(null,"",location.pathname+location.search);
+ setTab("home");
+}
+function openCategory(chosen){
+ category=chosen;
+ history.pushState({section:"catalog",category:chosen},"","#categoria="+encodeURIComponent(chosen));
+ setTab("catalog");
 }
 function paintPublicRemitos(){
  const needle=normalize($("remitos-search").value.trim());
@@ -293,7 +346,7 @@ function detailFields(p){
  return vals.map(([label,value])=>'<div><dt>'+escapeHtml(label)+'</dt><dd>'+escapeHtml(value||"—")+'</dd></div>').join("");
 }
 function showDetail(code,focus=false){
- currentSection="catalog";$("remitos-view").hidden=true;
+ currentSection="catalog";$("home-view").hidden=true;$("monitor-section-back").hidden=false;$("monitor-header").classList.add("compact");$("remitos-view").hidden=true;
  const p=all.find(x=>x.code===code);
  if(!p){showCatalog();return}
  $("catalog-view").hidden=true;
@@ -302,23 +355,24 @@ function showDetail(code,focus=false){
  const image=p.photo_url?'<img src="'+escapeHtml(p.photo_url)+'" alt="Foto ampliada de '+escapeHtml(p.name)+'" referrerpolicy="no-referrer">':'<div class="detail-placeholder"><span aria-hidden="true">📦</span><small>Este artículo todavía no tiene fotografía</small></div>';
  box.innerHTML='<button type="button" class="detail-back" id="detail-back">← Volver al catálogo</button><div class="detail-panel"><div class="detail-image">'+image+'</div><div class="detail-info"><div class="detail-eyebrow">Ficha del material · Solo consulta</div><h2>'+escapeHtml(p.name)+'</h2><div class="detail-quantity"><strong>'+numberFormat.format(qty)+'</strong><span>'+escapeHtml(p.unit||"unidades")+' disponibles</span></div><span class="detail-state '+(zero?"zero":low?"low":"")+'">'+(zero?"SIN STOCK":low?"QUEDAN POCOS":"DISPONIBLE")+'</span><dl class="detail-data">'+detailFields(p)+'</dl><p class="detail-hint">Información del inventario de GLORIETA. El pedido se confirmará en administración.</p><button type="button" class="cart-add" data-cart-code="'+escapeHtml(p.code)+'">+ Agregar al carrito</button></div></div>';
  $("detail-back").addEventListener("click",()=>{
-  history.pushState(null,"",location.pathname+location.search);
-  showCatalog(true);
+  history.back();
  });
  if(focus){window.scrollTo(0,0);$("detail-back").focus({preventScroll:true})}
 }
 function showCatalog(focus=false){
- if(currentSection==="remitos"||currentSection==="cart")return;
+ if(currentSection==="remitos"||currentSection==="cart"||currentSection==="home")return;
  $("detail-view").hidden=true;
  $("catalog-view").hidden=false;
  if(focus){window.scrollTo(0,0);$("search").focus({preventScroll:true})}
 }
 function syncRoute(){
- if(location.hash==="#remitos"){currentSection="remitos";setTab("remitos");return}
- if(currentSection==="remitos"){currentSection="catalog";setTab("catalog")}
  const code=currentCode();
- if(code && all.length)showDetail(code);
- else if(!code)showCatalog();
+ if(code&&all.length){showDetail(code);return}
+ const hash=location.hash;
+ if(hash==="#remitos"){setTab("remitos");return}
+ if(hash.startsWith("#categoria=")){try{category=decodeURIComponent(hash.slice(11))}catch{category="Todas"}setTab("catalog");return}
+ if(hash==="#catalogo"){category="Todas";setTab("catalog");return}
+ setTab("home");
 }
 function openDetail(code){
  history.pushState({code},"","#producto="+encodeURIComponent(code));
@@ -326,7 +380,6 @@ function openDetail(code){
 }
 window.addEventListener("popstate",syncRoute);
 window.addEventListener("hashchange",syncRoute);
-
 function normalize(s){return String(s??"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLocaleUpperCase("es-AR")}
 function renderFilters(){
  const cats=$("categories");cats.replaceChildren();
@@ -334,22 +387,17 @@ function renderFilters(){
   const b=document.createElement("button");b.type="button";b.className="filter-button"+(category===val?" selected":"");b.textContent=val;b.setAttribute("aria-pressed",String(category===val));
   b.addEventListener("click",()=>{category=val;paint()});cats.appendChild(b);
  }
- const abc=$("alphabet");abc.replaceChildren();
- for(const val of letters){
-  const b=document.createElement("button");b.type="button";b.className="letter-button"+(letter===val?" selected":"");b.textContent=val==="Todas"?"Todas":val;b.setAttribute("aria-pressed",String(letter===val));
-  b.addEventListener("click",()=>{letter=val;paint()});abc.appendChild(b);
- }
+
 }
 function paint(){
  const q=normalize($("search").value.trim());
  const filtered=all.filter(p=>(category==="Todas"||(p.category||"Varios")===category)
-    &&(letter==="Todas"||(letter==="Ñ"?String(p.name||"").trim().toLocaleUpperCase("es-AR").startsWith("Ñ"):normalize(p.name).startsWith(letter)))
     &&[p.name,p.color,p.package_size,p.category].some(value=>normalize(value).includes(q)));
- $("filter-description").textContent=[category!=="Todas"?category:"Todas las categorías",letter!=="Todas"?"Letra "+letter:null].filter(Boolean).join(" · ");
+ $("filter-description").textContent=category!=="Todas"?category:"Todas las categorías";
  renderFilters();
  const frag=document.createDocumentFragment();
  if(!filtered.length){
-  const node=document.createElement("div");node.className="empty";node.textContent=all.length?"No encontramos artículos para estos filtros. Podés cambiar la categoría, la letra o la búsqueda.":"El inventario todavía está vacío.";frag.appendChild(node);
+  const node=document.createElement("div");node.className="empty";node.textContent=all.length?"No encontramos artículos para estos filtros. Podés cambiar la categoría o la búsqueda.":"El inventario todavía está vacío.";frag.appendChild(node);
  }
  for(const p of filtered){
   const el=document.createElement("article");el.className="paper";el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label","Ver foto y detalles de "+p.name);el.addEventListener("click",e=>{if(e.target.closest("[data-cart-code]"))return;openDetail(p.code)});el.addEventListener("keydown",e=>{if(e.target===el&&(e.key==="Enter"||e.key===" ")){e.preventDefault();openDetail(p.code)}});
@@ -392,6 +440,13 @@ $("tab-catalog").addEventListener("click",()=>setTab("catalog"));
 $("tab-remitos").addEventListener("click",()=>setTab("remitos"));
 $("remitos-search").addEventListener("input",paintPublicRemitos);
 $("remitos-refresh").addEventListener("click",loadPublicRemitos);
-refresh();if(location.hash==="#remitos")setTab("remitos");
-setInterval(()=>{if(!document.hidden){if(currentSection==="remitos")loadPublicRemitos();else refresh()}},60000);
+$("monitor-home").onclick=home;
+$("monitor-back").onclick=home;
+$("monitor-help").onclick=()=>alert("MONITOR GLORIETA: elegí una categoría, agregá materiales al carrito y enviá tu pedido. No necesitás ingresar con código.");
+$("go-cart").onclick=()=>window.GlorietaCart?.show();
+$("go-remitos").onclick=()=>{history.pushState({section:"remitos"},"","#remitos");setTab("remitos")};
+$("go-all").onclick=()=>openCategory("Todas");
+document.querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>openCategory(b.dataset.category));
+refresh();syncRoute();
+setInterval(()=>{if(!document.hidden){if(currentSection==="remitos")loadPublicRemitos();else if(currentSection!=="home")refresh()}},60000);
 </script><script src="./monitor-cart.js?v=2"></script></body></html>
