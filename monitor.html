@@ -369,6 +369,7 @@ function syncRoute(){
  const code=currentCode();
  if(code&&all.length){showDetail(code);return}
  const hash=location.hash;
+ if(hash==="#carrito"){window.GlorietaCart?.show(false);return}
  if(hash==="#remitos"){setTab("remitos");return}
  if(hash.startsWith("#categoria=")){try{category=decodeURIComponent(hash.slice(11))}catch{category="Todas"}setTab("catalog");return}
  if(hash==="#catalogo"){category="Todas";setTab("catalog");return}
@@ -449,4 +450,4 @@ $("go-all").onclick=()=>openCategory("Todas");
 document.querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>openCategory(b.dataset.category));
 refresh();syncRoute();
 setInterval(()=>{if(!document.hidden){if(currentSection==="remitos")loadPublicRemitos();else if(currentSection!=="home")refresh()}},60000);
-</script><script src="./monitor-cart.js?v=2"></script></body></html>
+</script><script src="./monitor-cart.js?v=4"></script></body></html>
