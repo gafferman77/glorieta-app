@@ -24,7 +24,7 @@ function show(){
  $("tab-cart")?.classList.add("active");$("tab-catalog")?.setAttribute("aria-current","false");
  $("tab-remitos")?.setAttribute("aria-current","false");$("tab-cart")?.setAttribute("aria-current","page");
  $("catalog-view").hidden=true;$("detail-view").hidden=true;$("remitos-view").hidden=true;
- $("cart-view").hidden=false;draw();window.scrollTo(0,0);
+ $("cart-view").hidden=false;history.replaceState(null,"",location.pathname+location.search);draw();window.scrollTo(0,0);
 }
 function draw(){
  const root=$("cart-items");if(!root)return;
