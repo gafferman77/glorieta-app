@@ -161,16 +161,34 @@ function detail(){const p=items.find(x=>x.id===selected);if(!p){nav('inventory')
  $('main-panel').innerHTML='<section class="paper"><div class="row"><h2>📋 Ficha de artículo</h2><button class="btn btn-soft" id="back">← Volver</button></div><div class="detail-header"><div class="bigpic">'+pic(p)+'</div><div><h3>'+esc(p.name)+'</h3><span class="badge-note">'+esc(p.code)+'</span><p><span class="qty">'+fmt(p.quantity)+' '+esc(p.unit)+'</span></p></div></div><div class="fields-list">'+[['Categoría',p.category],['Color / variante',p.color],['Presentación',p.package_size],['Vencimiento',p.expiration_date||'No aplica'],['Ubicación',p.location],['Observaciones',p.notes]].map(([k,v])=>'<div><small>'+k+'</small><b>'+esc(v||'—')+'</b></div>').join('')+'</div><div class="stock-note"><b>📦 Registrar movimiento</b><p class="mini">Las entradas y salidas quedan registradas en la nube.</p><div class="adjust"><select id="kind"><option value="entrada">Entrada (+)</option><option value="salida">Salida (−)</option></select><input id="amount" type="number" min="0.01" max="1000000" step="0.01" placeholder="Cantidad"><button class="btn" id="move">Registrar</button></div><label class="form-field" style="margin-top:9px">Motivo<input id="reason" maxlength="200" placeholder="Entrega o reposición"></label></div><div class="form-actions"><button class="btn btn-green" id="edit">✎ Editar ficha / corregir stock</button><button class="btn btn-soft" id="refresh-detail">↻ Actualizar stock</button><button class="btn btn-red" id="archive-product">🗑 Eliminar artículo</button></div></section>';
  $('back').onclick=()=>nav('inventory');$('edit').onclick=()=>navigate('add',{editing:p.id});
  $('refresh-detail').onclick=async()=>{await refresh();selected=p.id;view='detail';render()};
- $('archive-product').onclick=async()=>{
+ $('archive-product').onclick=()=>{
   if(busy)return;
-  const confirmFirst=window.confirm('¿Eliminar «'+p.name+'» ('+p.code+') del inventario y el Monitor?\\n\\nEsta ficha tiene '+fmt(p.quantity)+' '+p.unit+'. Las cantidades NO se sumarán a otro artículo. Podrás recuperarla desde «Eliminados».');
-  if(!confirmFirst)return;
-  const confirmLast=window.prompt('Para confirmar, escribí ELIMINAR. Se conservará una copia recuperable de la ficha.');
-  if(confirmLast!=='ELIMINAR'){toast('Eliminación cancelada');return}
-  busy=true;$('archive-product').disabled=true;
-  try{await api('archive',{id:p.id,operator});const d=await api('list');items=d.products||[];selected=null;view='inventory';render();toast('Artículo eliminado de la lista. Se puede recuperar desde Eliminados.')}
-  catch(e){toast('No se pudo eliminar: '+e.message);$('archive-product').disabled=false}
-  finally{busy=false}
+  const button=$('archive-product');
+  if($('archive-confirmation'))return;
+  const section=document.createElement('div');
+  section.id='archive-confirmation';
+  section.className='archive-confirmation';
+  section.setAttribute('role','group');
+  section.setAttribute('aria-label','Confirmar eliminación del artículo');
+  section.innerHTML='<strong>¿Eliminar este artículo?</strong><p>Se quitará «'+esc(p.name)+'» ('+esc(p.code)+') del Inventario y del Monitor. Tiene <b>'+fmt(p.quantity)+' '+esc(p.unit)+'</b>. No se transferirán cantidades a otro artículo.</p><p class="mini">La ficha quedará en «Eliminados» y podrás recuperarla.</p><div class="form-actions"><button type="button" class="btn btn-red" id="archive-yes">Sí, eliminar artículo</button><button type="button" class="btn btn-soft" id="archive-no">No, conservar</button></div>';
+  button.insertAdjacentElement('afterend',section);
+  section.querySelector('#archive-no').onclick=()=>section.remove();
+  section.querySelector('#archive-yes').onclick=async()=>{
+   if(busy)return;
+   busy=true;section.querySelector('#archive-yes').disabled=true;
+   section.querySelector('#archive-yes').textContent='Eliminando…';
+   try{
+    await api('archive',{id:p.id,operator});
+    const d=await api('list');items=d.products||[];
+    toast('Artículo eliminado. Podés recuperarlo desde Eliminados.');
+    navigate('inventory');
+   }catch(e){
+    toast('No se pudo eliminar: '+e.message);
+    section.querySelector('#archive-yes').disabled=false;
+    section.querySelector('#archive-yes').textContent='Sí, eliminar artículo';
+   }finally{busy=false}
+  };
+  section.scrollIntoView({behavior:'smooth',block:'nearest'});
  };
  $('move').onclick=async()=>{if(busy)return;const n=Number($('amount').value),kind=$('kind').value;if(!Number.isFinite(n)||n<=0||n>1000000){toast('Ingresá una cantidad válida');return}if(kind==='salida'&&n>Number(p.quantity)){toast('Stock insuficiente según esta pantalla; actualizá los datos');return}busy=true;$('move').disabled=true;try{await api('move',{id:p.id,kind,amount:n,operator,note:$('reason').value});const d=await api('list');items=d.products||[];toast('Movimiento guardado para ambos dispositivos');render()}catch(e){toast(e.message);$('move').disabled=false}finally{busy=false}};
 }
