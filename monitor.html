@@ -308,7 +308,7 @@ function showDetail(code,focus=false){
  if(focus){window.scrollTo(0,0);$("detail-back").focus({preventScroll:true})}
 }
 function showCatalog(focus=false){
- if(currentSection==="remitos")return;
+ if(currentSection==="remitos"||currentSection==="cart")return;
  $("detail-view").hidden=true;
  $("catalog-view").hidden=false;
  if(focus){window.scrollTo(0,0);$("search").focus({preventScroll:true})}
@@ -352,7 +352,7 @@ function paint(){
   const node=document.createElement("div");node.className="empty";node.textContent=all.length?"No encontramos artículos para estos filtros. Podés cambiar la categoría, la letra o la búsqueda.":"El inventario todavía está vacío.";frag.appendChild(node);
  }
  for(const p of filtered){
-  const el=document.createElement("article");el.className="paper";el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label","Ver foto y detalles de "+p.name);el.addEventListener("click",()=>openDetail(p.code));el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openDetail(p.code)}});
+  const el=document.createElement("article");el.className="paper";el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label","Ver foto y detalles de "+p.name);el.addEventListener("click",e=>{if(e.target.closest("[data-cart-code]"))return;openDetail(p.code)});el.addEventListener("keydown",e=>{if(e.target===el&&(e.key==="Enter"||e.key===" ")){e.preventDefault();openDetail(p.code)}});
   const image=p.photo_url?'<img loading="lazy" referrerpolicy="no-referrer" src="'+escapeHtml(p.photo_url)+'" alt="Foto del artículo">':"📦";
   el.innerHTML='<div class="item-top"><div class="thumb">'+image+'</div><div><h2 class="product-name">'+escapeHtml(p.name)+'</h2><div class="meta">'+escapeHtml(p.category||"Varios")+(p.package_size?' · '+escapeHtml(p.package_size):"")+'</div><div class="card-more">Ver fotografía y detalle →</div></div></div><button class="cart-add" type="button" data-cart-code="'+escapeHtml(p.code)+'">+ Agregar al carrito</button>';
   frag.appendChild(el);
