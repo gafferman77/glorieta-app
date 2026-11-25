@@ -43,6 +43,7 @@ function dibujarPedido(p){
  '<label class="form-field">¿Para quién / qué sector? *<input name="para_quien" maxlength="160" required value="'+esc(p.para_quien)+'" '+(!pending?'disabled':'')+'></label>'+
  '<label class="form-field">Destino *<input name="destino" maxlength="160" required value="'+esc(p.destino)+'" '+(!pending?'disabled':'')+'></label>'+
  '<label class="form-field">Responsable del retiro<input name="responsable_retiro" maxlength="120" value="'+esc(p.responsable_retiro||'')+'" '+(!pending?'disabled':'')+' placeholder="Persona que recibe físicamente"></label>'+
+ '<label class="form-field full">Autorizado por (obligatorio al entregar)<select id="pedido-autorizador" name="autorizado_por" '+(!pending?'disabled':'')+'><option value="">Seleccionar quién autoriza…</option>'+autorizantesGlorieta.map(x=>'<option value="'+esc(x)+'" '+(p.autorizado_por===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></label>'+
  '<label class="form-field">Tipo<select name="tipo" '+(!pending?'disabled':'')+'><option value="entrega" '+(!p.es_prestamo?'selected':'')+'>Entrega</option><option value="prestamo" '+(p.es_prestamo?'selected':'')+'>Préstamo</option></select></label>'+
  '<label class="form-field full">Observaciones<textarea name="observaciones" maxlength="800" rows="2" '+(!pending?'disabled':'')+'>'+esc(p.observaciones||'')+'</textarea></label></div>'+
  '<div class="remito-section"><div class="row"><h3>Materiales del carrito físico</h3>'+(pending?'<button id="pedido-add" type="button" class="btn btn-soft">+ Agregar material</button>':'')+'</div><div id="pedido-items"></div></div>'+
@@ -74,9 +75,11 @@ function dibujarPedido(p){
  $('pedido-cancelar').onclick=async()=>{if(pedidoBusy)return;if(!confirm("¿Cancelar este pedido? No se descontará ningún artículo."))return;pedidoBusy=true;try{const res=await api("pedido_cancel",{pedido:{id:p.id,expected_updated_at:p.updated_at,operator}});dibujarPedido(res.pedido);toast("Pedido cancelado")}catch(e){toast(e.message)}finally{pedidoBusy=false}};
  $('pedido-entregar').onclick=async()=>{
   if(pedidoBusy)return;
+  const autorizado=$('pedido-autorizador')?.value||'';
+  if(!autorizantesGlorieta.includes(autorizado)){toast('Seleccioná quién autoriza esta salida');$('pedido-autorizador')?.focus();return}
   if(!confirm("¿Ya preparaste y entregaste físicamente los materiales? Se descontará el stock y se generará el remito. Esta operación no se puede repetir."))return;
   pedidoBusy=true;$('pedido-entregar').disabled=true;
-  try{const fd=new FormData($('pedido-form'));const res=await api("pedido_entregar",{id:p.id,operator,responsable_retiro:fd.get("responsable_retiro")||null});
+  try{const fd=new FormData($('pedido-form'));const res=await api("pedido_entregar",{id:p.id,operator,responsable_retiro:fd.get("responsable_retiro")||null,autorizado_por:autorizado});
    toast("Entrega confirmada: stock descontado y remito generado");
    await abrirPedido(p.id,false);
    if(res.remito_id)window.open("remito.html?id="+encodeURIComponent(res.remito_id),"_blank","noopener");
