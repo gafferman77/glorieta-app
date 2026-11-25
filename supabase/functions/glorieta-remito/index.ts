@@ -20,7 +20,7 @@ Deno.serve(async req=>{
   }
   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))return reply({error:"Enlace de remito no válido"},400);
   const {data,error}=await db.from("glorieta_remitos")
-   .select("numero,solicitante_nombre,solicitante_apellido,destino,responsable_retiro,es_prestamo,nota_original,items,estado,created_at,updated_at")
+   .select("numero,solicitante_nombre,solicitante_apellido,destino,responsable_retiro,autorizado_por,es_prestamo,nota_original,items,estado,created_at,updated_at")
    .eq("id",id).eq("estado","preparado").single();
   if(error||!data)return reply({error:"Remito no encontrado o todavía en borrador"},404);
   return reply({remito:data});
