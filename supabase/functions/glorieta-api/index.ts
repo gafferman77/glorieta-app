@@ -48,7 +48,7 @@ Deno.serve(async req=>{
    return respond({products:await enrich(data||[])});
   }
   if(action==="archived_list"){
-   const {data,error}=await db.from("glorieta_products").select("id,code,name,category,quantity,unit,archived_at,archived_by").not("archived_at","is",null).order("archived_at",{ascending:false}).limit(200);
+   const {data,error}=await db.from("glorieta_products").select("id,code,name,category,quantity,unit,archived_at,archived_by").not("archived_at","is","null").order("archived_at",{ascending:false}).limit(200);
    if(error)throw error;return respond({products:data||[]});
   }
   if(action==="archive"||action==="restore"){
@@ -57,7 +57,7 @@ Deno.serve(async req=>{
    const archived=action==="archive";
    const {data,error}=await db.from("glorieta_products")
      .update({archived_at:archived?new Date().toISOString():null,archived_by:archived?who:null})
-     .eq("id",id)[archived?"is":"not"]("archived_at","is",null)
+     .eq("id",id)[archived?"is":"not"]("archived_at","is",archived?null:"null")
      .select("id,name,code,archived_at").maybeSingle();
    if(error)throw error;
    if(!data)throw Error("El artículo fue modificado o ya no está en ese estado. Actualizá la lista.");
