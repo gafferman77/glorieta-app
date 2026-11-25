@@ -17,12 +17,12 @@ async function showRemitos(){
   document.querySelectorAll('[data-remito]').forEach(b=>b.onclick=()=>cargarRemito(b.dataset.remito));
  }catch(e){if($('lista-remitos'))$('lista-remitos').textContent='No se pudo cargar la lista: '+e.message}
 }
-async function cargarRemito(id){
+async function cargarRemito(id,track=true){
  status("Abriendo remito...");
  try{
   const d=await api("remito_get",{id});
   if(view!=="remitos")return;
-  abrirEditorRemito(d.remito);
+  abrirEditorRemito(d.remito,track);
  }catch(e){toast(e.message);showRemitos()}
 }
 function lineasHtml(){
@@ -94,12 +94,13 @@ function actualizarFotoRemito(){
   else estado.textContent="Fotografía adjunta al remito.";
  }else estado.textContent=remitoFotoEliminada?"Foto quitada. Guardá el remito para confirmar.":"Sin foto adjunta";
 }
-function abrirEditorRemito(data=null){
+function abrirEditorRemito(data=null,track=true){
+ if(track&&!restoringHistory)history.pushState({...pageState(),sub:'remito',id:data?.id||null},'','#remitos');
  remitoActual=data;remitoFoto=null;remitoFotoNueva=null;remitoFotoEliminada=false;
  remitoLineas=Array.isArray(data?.items)?data.items.map(x=>({...x})):[];
  const saved=data?'<span class="badge-note">'+esc(remitoNumero(data.numero))+'</span>':'<span class="badge-note">Nuevo · Borrador</span>';
  $('main-panel').innerHTML='<section class="paper remito-editor"><div class="row"><h2>Remito '+saved+'</h2><button id="remito-back" class="btn btn-soft" type="button">← Lista de remitos</button></div><p class="mini">Solicitante: persona que realiza el pedido. Responsable del retiro: quien se lleva físicamente los materiales; puede completarse después. Los préstamos quedan abiertos sin fecha de devolución.</p><form id="form-remito"><div class="field-grid"><label class="form-field">Nombre del solicitante *<input name="solicitante_nombre" required maxlength="100" value="'+esc(data?.solicitante_nombre||'')+'"></label><label class="form-field">Apellido del solicitante *<input name="solicitante_apellido" required maxlength="100" value="'+esc(data?.solicitante_apellido||'')+'"></label><label class="form-field full">Destino / ¿a qué lugar va? *<input name="destino" required maxlength="160" placeholder="Área, dependencia, institución..." value="'+esc(data?.destino||'')+'"></label><label class="form-field">Responsable del retiro <small>(se completa cuando retira)</small><input name="responsable_retiro" maxlength="120" placeholder="Pendiente" value="'+esc(data?.responsable_retiro||'')+'"></label><label class="form-field">Tipo de pedido<select name="tipo"><option value="entrega" '+(!data?.es_prestamo?"selected":"")+'>Entrega de materiales</option><option value="prestamo" '+(data?.es_prestamo?"selected":"")+'>Préstamo · devolución abierta</option></select></label></div><div class="remito-section"><h3>Nota del pedido</h3><p class="mini">Pegá aquí el mensaje recibido (WhatsApp, papel o texto). Conservarlo permite verificar el pedido original.</p><textarea id="nota-remito" maxlength="8000" rows="5" placeholder="Ejemplo: 5 cajas de curitas\n2 pelotas\n1 botiquín...">'+esc(data?.nota_original||'')+'</textarea><div class="remito-actions"><button id="interpretar-nota" class="btn btn-soft" type="button">Pasar texto a renglones</button></div><label class="form-field full" style="margin-top:15px">Fotografía de la nota / pedido<input id="foto-remito" type="file" accept="image/*"></label><div id="foto-estado" class="mini"></div><div class="remito-actions"><button id="quitar-foto-remito" class="btn btn-red" type="button" hidden>Quitar foto</button><button id="remito-ocr" class="btn btn-soft" type="button">Leer texto de la foto</button></div><p id="ocr-status" class="mini">La lectura de fotos utiliza reconocimiento de texto y requiere conexión. Siempre revisá las cantidades.</p></div><div class="remito-section"><div class="row"><h3>Detalle de materiales</h3><button id="remito-add" class="btn btn-soft" type="button">+ Agregar renglón</button></div><div id="remito-lineas"></div></div><div class="remito-section"><p class="mini">Solo los remitos marcados como «Preparado» se publican en MONITOR GLORIETA. Guardá el documento antes de compartir.</p><label class="form-field">Estado<select name="estado"><option value="borrador" '+(data?.estado!=="preparado"?"selected":"")+'>Borrador · pendiente de revisión</option><option value="preparado" '+(data?.estado==="preparado"?"selected":"")+'>Preparado · listo para compartir</option></select></label></div><div class="form-actions"><button class="btn btn-green" id="guardar-remito" type="submit">Guardar remito</button><button class="btn btn-soft" type="button" id="cancelar-remito">Cancelar</button></div></form>'+(data && data.estado==="preparado"?'<div class="remito-section"><h3>Compartir remito</h3><p class="mini">El enlace permite consultar el remito sin editar. Compartilo solamente con sus destinatarios.</p><div class="remito-actions"><button class="btn btn-soft" type="button" id="enlace-remito">Copiar enlace</button><button class="btn btn-soft" type="button" id="whatsapp-remito">WhatsApp</button><button class="btn btn-soft" type="button" id="pdf-remito">Ver / Guardar PDF</button></div></div>':'')+'</section>';
- $('remito-back').onclick=()=>showRemitos();$('cancelar-remito').onclick=()=>showRemitos();
+ $('remito-back').onclick=goBackInside;$('cancelar-remito').onclick=goBackInside;
  $('interpretar-nota').onclick=interpretarNota;
  $('remito-add').onclick=()=>{capturarLineas();remitoLineas.push({descripcion:"",cantidad:"",unidad:"unidades"});lineasHtml();const all=document.querySelectorAll(".remito-desc");all[all.length-1]?.focus()};
  $('foto-remito').onchange=e=>{const file=e.target.files?.[0];if(!file)return;if(!file.type.startsWith("image/")){toast("Elegí una fotografía válida");return}remitoFotoNueva=file;remitoFotoEliminada=false;actualizarFotoRemito()};
@@ -157,7 +158,7 @@ async function guardarRemito(e){
    const loaded=await api("remito_get",{id:saved.id});
    remitoActual=loaded.remito;
   }
-  abrirEditorRemito(remitoActual);toast("Remito "+remitoNumero(saved.numero)+" guardado. Ya podés compartirlo.");
+  abrirEditorRemito(remitoActual,false);toast("Remito "+remitoNumero(saved.numero)+" guardado. Ya podés compartirlo.");
  }catch(e){toast("No se pudo guardar: "+e.message);btn.disabled=false;btn.textContent="Guardar remito"}
  finally{remitoBusy=false}
 }
