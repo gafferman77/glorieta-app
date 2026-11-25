@@ -22,7 +22,7 @@ function navigate(to,opts={}){
 }
 function goBackInside(){if(history.state?.glorieta&&history.state?.sub)history.back();else navigate('home')}
 async function requestItems(){if(itemsLoading)return itemsLoading;itemsLoading=(async()=>{const r=await api('list');items=r.products||[];itemsLoaded=true})();try{await itemsLoading}finally{itemsLoading=null}}
-function loadForView(){const target=view;if(itemsLoading)return;requestItems().then(()=>{if(view===target)render()}).catch(e=>{if(view!==target)return;if(/401|código de acceso|incorrecto/i.test(e.message)){clearLogin();login()}else{status('No se pudieron cargar los artículos: '+e.message);toast(e.message)}})}
+function loadForView(){const target=view;requestItems().then(()=>{if(view===target)render()}).catch(e=>{if(view!==target)return;if(/401|código de acceso|incorrecto/i.test(e.message)){clearLogin();login()}else{status('No se pudieron cargar los artículos: '+e.message);toast(e.message)}})}
 
 const fmt=(n)=>Number(n).toLocaleString('es-AR',{maximumFractionDigits:2});
 const pic=p=>p.photo_url?'<img src="'+esc(p.photo_url)+'" alt="Foto de '+esc(p.name)+'">':'<span>📦</span>';
