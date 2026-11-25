@@ -28,7 +28,7 @@ Deno.serve(async req=>{
   const items=products.map(prod=>({product_id:prod.id,codigo:prod.code,nombre:prod.name,unidad:prod.unit,cantidad:map.get(prod.code)}));
   for(const item of items){
    const prod=products.find(x=>x.id===item.product_id)!;
-   if(item.cantidad!>Number(prod.quantity))throw Error("La cantidad solicitada supera el stock de "+prod.name);
+   if(Number(item.cantidad)>Number(prod.quantity))throw Error("La cantidad solicitada supera el stock de "+prod.name);
   }
   const payload={solicitante_nombre:nombre,solicitante_apellido:apellido,para_quien:para,destino,observaciones:val(p.observaciones,800),es_prestamo:p.es_prestamo===true,items,estado:"pendiente"};
   const {data,error:saveError}=await db.from("glorieta_pedidos").insert(payload).select("id,numero").single();
