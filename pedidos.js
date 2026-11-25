@@ -13,9 +13,9 @@ async function showPedidos(){
   document.querySelectorAll('[data-pedido]').forEach(b=>b.onclick=()=>abrirPedido(b.dataset.pedido));
  }catch(e){if($('pedidos-results'))$('pedidos-results').textContent="No se pudieron cargar pedidos: "+e.message}
 }
-async function abrirPedido(id){
+async function abrirPedido(id,track=true){
  if(view!=="pedidos")return;status("Abriendo pedido…");
- try{const d=await api("pedido_get",{id});if(view!=="pedidos")return;dibujarPedido(d.pedido)}
+ try{const d=await api("pedido_get",{id});if(view!=="pedidos")return;if(track&&!restoringHistory)history.pushState({...pageState(),sub:'pedido',id},'','#pedidos');dibujarPedido(d.pedido)}
  catch(e){toast(e.message);showPedidos()}
 }
 function recogerPedidoLineas(){
@@ -48,7 +48,7 @@ function dibujarPedido(p){
  '<div class="remito-section"><div class="row"><h3>Materiales del carrito físico</h3>'+(pending?'<button id="pedido-add" type="button" class="btn btn-soft">+ Agregar material</button>':'')+'</div><div id="pedido-items"></div></div>'+
  '<div class="form-actions">'+(pending?'<button id="pedido-save" class="btn btn-green" type="submit">Guardar cambios</button><button id="pedido-entregar" class="btn btn-soft" type="button">✓ Confirmar entrega y descontar stock</button><button id="pedido-cancelar" class="btn btn-red" type="button">Cancelar pedido</button>':'')+
  (r?'<button class="btn btn-soft" id="pedido-remito" type="button">Ver remito generado</button>':'')+'</div><p class="mini" id="pedido-nota-edicion">'+(pending?"El stock se descuenta únicamente al confirmar la entrega. Revisá las cantidades reales.":"Pedido cerrado. No puede volver a descontarse.")+'</p></form></section>';
- $('pedido-back').onclick=showPedidos;
+ $('pedido-back').onclick=goBackInside;
  if(!pending){
   $('pedido-items').innerHTML=(p.items||[]).map(row=>'<div class="movement"><b>'+esc(row.nombre)+' · '+fmt(row.cantidad)+' '+esc(row.unidad)+'</b></div>').join('');
   if(r)$('pedido-remito').onclick=()=>window.open("remito.html?id="+encodeURIComponent(r),"_blank","noopener");
@@ -78,7 +78,7 @@ function dibujarPedido(p){
   pedidoBusy=true;$('pedido-entregar').disabled=true;
   try{const fd=new FormData($('pedido-form'));const res=await api("pedido_entregar",{id:p.id,operator,responsable_retiro:fd.get("responsable_retiro")||null});
    toast("Entrega confirmada: stock descontado y remito generado");
-   await abrirPedido(p.id);
+   await abrirPedido(p.id,false);
    if(res.remito_id)window.open("remito.html?id="+encodeURIComponent(res.remito_id),"_blank","noopener");
   }catch(e){toast("No se pudo entregar: "+e.message);$('pedido-entregar')?.removeAttribute('disabled')}
   finally{pedidoBusy=false}
