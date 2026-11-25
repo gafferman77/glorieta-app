@@ -43,9 +43,25 @@ Deno.serve(async req=>{
  try{
   const body=await req.json(), action=max(body.action,30);
   if(action==="list"){
-   const {data,error}=await db.from("glorieta_products").select("*").order("name").limit(1000);
+   const {data,error}=await db.from("glorieta_products").select("*").is("archived_at",null).order("name").limit(1000);
    if(error)throw error;
    return respond({products:await enrich(data||[])});
+  }
+  if(action==="archived_list"){
+   const {data,error}=await db.from("glorieta_products").select("id,code,name,category,quantity,unit,archived_at,archived_by").not("archived_at","is",null).order("archived_at",{ascending:false}).limit(200);
+   if(error)throw error;return respond({products:data||[]});
+  }
+  if(action==="archive"||action==="restore"){
+   const id=max(body.id,60),who=max(body.operator,100);
+   if(!/^[0-9a-f-]{36}$/i.test(id)||!who)throw Error("Artículo o encargado incorrecto");
+   const archived=action==="archive";
+   const {data,error}=await db.from("glorieta_products")
+     .update({archived_at:archived?new Date().toISOString():null,archived_by:archived?who:null})
+     .eq("id",id)[archived?"is":"not"]("archived_at","is",null)
+     .select("id,name,code,archived_at").maybeSingle();
+   if(error)throw error;
+   if(!data)throw Error("El artículo fue modificado o ya no está en ese estado. Actualizá la lista.");
+   return respond({product:data});
   }
   if(action==="history"){
    const {data,error}=await db.from("glorieta_movements").select("*").order("created_at",{ascending:false}).limit(300);
