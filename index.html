@@ -132,6 +132,14 @@ footer em{font-size:clamp(10px,2.4vw,13px);margin-top:6px}
 body{background:#031a2a}.app-frame{background:linear-gradient(160deg,#021d31 0%,#012236 55%,#001726 100%)}.blackboard{background:transparent}
 @media(max-width:650px){.masthead{padding:21px 6px 10px;grid-template-columns:41px 1fr 41px}.masthead .brand-logo{width:112px;height:112px}.masthead h1{font-size:35px}.header-icon{font-size:28px}.workarea{padding:0 12px 25px}.tiles{margin-top:28px;gap:9px}.tile{border-radius:17px;min-height:130px}.tile-icon{font-size:47px}.tile-icon small{font-size:25px}.tile span:last-child{font-size:13px}}
 
+.tile-icon{display:grid;place-items:center}.tile-icon svg{width:clamp(47px,10vw,82px);height:clamp(47px,10vw,82px);fill:none;stroke:#fff;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+body.inside-section .masthead{padding-top:9px;grid-template-columns:42px 1fr 42px}
+body.inside-section .masthead .brand-logo{width:54px;height:54px;border-width:2px}
+body.inside-section .masthead h1{font-size:24px;margin:4px 0 0}
+body.inside-section .masthead .brand-stroke{height:3px;margin-bottom:4px}
+body.inside-section .masthead p{font-size:10px}
+body.inside-section .header-icon{font-size:24px}
+@media(max-width:650px){.tile-icon svg{width:53px;height:53px}}
 </style></head><body>
 <div class="app-frame"><div class="blackboard">
 <header class="masthead">
@@ -146,14 +154,14 @@ body{background:#031a2a}.app-frame{background:linear-gradient(160deg,#021d31 0%,
 </header>
 <div class="workarea">
 <nav class="tiles" id="home-tiles" aria-label="Opciones principales de GLORIETA" hidden>
- <button class="tile tile-pedidos" type="button" data-view="pedidos"><span class="tile-icon" aria-hidden="true">☷</span><span>Pedidos</span></button>
- <button class="tile tile-add" type="button" data-view="add"><span class="tile-icon" aria-hidden="true">▣<small>＋</small></span><span>Cargar<br>artículo</span></button>
- <button class="tile tile-inventory" type="button" data-view="inventory"><span class="tile-icon" aria-hidden="true">▤</span><span>Inventario</span></button>
- <button class="tile tile-moves" type="button" data-view="moves"><span class="tile-icon" aria-hidden="true">⇄</span><span>Movimientos</span></button>
- <button class="tile tile-remitos" type="button" data-view="remitos"><span class="tile-icon" aria-hidden="true">▧</span><span>Remitos</span></button>
+ <button class="tile tile-pedidos" type="button" data-view="pedidos"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="18" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="m8 10 1.5 1.5L12 9 M13 11h3 M8 16l1.5 1.5L12 15 M13 17h3"/></svg></span><span>Pedidos</span></button>
+ <button class="tile tile-add" type="button" data-view="add"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 9-4 9 4v10l-9 5-9-5V7Z M3 7l9 5 9-5 M12 12v10"/><circle cx="19" cy="18" r="4" fill="#00594f"/><path d="M19 16v4 M17 18h4"/></svg></span><span>Cargar<br>artículo</span></button>
+ <button class="tile tile-inventory" type="button" data-view="inventory"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="9" height="7" rx="1"/><rect x="13" y="5" width="9" height="7" rx="1"/><rect x="6" y="14" width="12" height="8" rx="1"/><path d="M7 8h2 M16 8h2 M10 17h4"/></svg></span><span>Inventario</span></button>
+ <button class="tile tile-moves" type="button" data-view="moves"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16l-5-5 M20 7l-5 5 M20 17H4l5-5 M4 17l5 5"/></svg></span><span>Movimientos</span></button>
+ <button class="tile tile-remitos" type="button" data-view="remitos"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h14v20l-3-2-3 2-3-2-3 2-2-2V2Z M9 8h6 M9 12h6 M9 16h4"/></svg></span><span>Remitos</span></button>
 </nav>
 <div id="section-toolbar" hidden><button type="button" class="btn btn-soft" id="home-back">← Inicio</button><span id="section-operator"></span></div>
 <main id="main-panel" aria-live="polite"></main>
 <footer><strong>GLORIETA</strong><span>Sistema interno de inventario.</span><span>Solo personal autorizado.</span><em>Creado por Mario Farías – Administrado por Gabriel Carrizo.</em></footer></div>
 </div></div>
-<div id="toast" role="status" aria-live="polite"></div><script src="visual-match.js?v=2"></script><script src="cloud.js?v=22"></script><script src="remitos.js?v=15"></script><script src="pedidos.js?v=1"></script></body></html>
+<div id="toast" role="status" aria-live="polite"></div><script src="visual-match.js?v=2"></script><script src="cloud.js?v=23"></script><script src="remitos.js?v=16"></script><script src="pedidos.js?v=2"></script></body></html>
