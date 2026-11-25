@@ -37,10 +37,11 @@ function attach(){document.querySelectorAll('[data-id]').forEach(b=>b.onclick=()
 function render(){
  document.querySelectorAll('.tile').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
  if(view==='inventory'){
-  $('main-panel').innerHTML='<section class="paper"><div class="row"><h2>📦 Inventario real</h2><span class="badge-note">'+items.length+' artículos en la nube</span></div><p class="mini">Base compartida · Operador: '+esc(operator)+'</p><div class="search-wrap"><input id="q" placeholder="🔎 Buscar artículos, colores, códigos..." value="'+esc(query)+'"><button class="btn btn-green" id="new">+ Nuevo</button><button class="btn btn-soft" id="sync" type="button">↻ Actualizar</button></div><div id="results">'+list(filtered())+'</div><p class="mini">La lista se consulta al entrar y al guardar. Tocá «Actualizar» para ver cambios del otro celular.</p></section>';
+  $('main-panel').innerHTML='<section class="paper"><div class="row"><h2>📦 Inventario real</h2><span class="badge-note">'+items.length+' artículos en la nube</span></div><p class="mini">Base compartida · Operador: '+esc(operator)+'</p><div class="search-wrap"><input id="q" placeholder="🔎 Buscar artículos, colores, códigos..." value="'+esc(query)+'"><button class="btn btn-green" id="new">+ Nuevo</button><button class="btn btn-soft" id="sync" type="button">↻ Actualizar</button><button class="btn btn-soft" id="archived-link" type="button">🗑 Eliminados</button></div><div id="results">'+list(filtered())+'</div><p class="mini">La lista se consulta al entrar y al guardar. Tocá «Actualizar» para ver cambios del otro celular.</p></section>';
   $('q').oninput=e=>{query=e.target.value;$('results').innerHTML=list(filtered());attach()};
-  $('new').onclick=()=>nav('add');$('sync').onclick=()=>refresh();attach();return;
+  $('new').onclick=()=>nav('add');$('sync').onclick=()=>refresh();$('archived-link').onclick=()=>{view='archived';render()};attach();return;
  }
+ if(view==='archived'){showArchived();return}
  if(view==='add'){form();return}
  if(view==='detail'){detail();return}
  if(view==='moves'){loadHistory();return}
@@ -104,10 +105,32 @@ if(p && p2.quantity!==Number(p.quantity) && String(p2.correction_reason||'').tri
  }catch(err){toast('No se pudo guardar: '+err.message);$('submit-product').disabled=false;$('submit-product').textContent='💾 Guardar en la nube'}finally{busy=false}};
 }
 function detail(){const p=items.find(x=>x.id===selected);if(!p){nav('inventory');return}
- $('main-panel').innerHTML='<section class="paper"><div class="row"><h2>📋 Ficha de artículo</h2><button class="btn btn-soft" id="back">← Volver</button></div><div class="detail-header"><div class="bigpic">'+pic(p)+'</div><div><h3>'+esc(p.name)+'</h3><span class="badge-note">'+esc(p.code)+'</span><p><span class="qty">'+fmt(p.quantity)+' '+esc(p.unit)+'</span></p></div></div><div class="fields-list">'+[['Categoría',p.category],['Color / variante',p.color],['Presentación',p.package_size],['Vencimiento',p.expiration_date||'No aplica'],['Ubicación',p.location],['Observaciones',p.notes]].map(([k,v])=>'<div><small>'+k+'</small><b>'+esc(v||'—')+'</b></div>').join('')+'</div><div class="stock-note"><b>📦 Registrar movimiento</b><p class="mini">Las entradas y salidas quedan registradas en la nube.</p><div class="adjust"><select id="kind"><option value="entrada">Entrada (+)</option><option value="salida">Salida (−)</option></select><input id="amount" type="number" min="0.01" max="1000000" step="0.01" placeholder="Cantidad"><button class="btn" id="move">Registrar</button></div><label class="form-field" style="margin-top:9px">Motivo<input id="reason" maxlength="200" placeholder="Entrega o reposición"></label></div><div class="form-actions"><button class="btn btn-green" id="edit">✎ Editar ficha / corregir stock</button><button class="btn btn-soft" id="refresh-detail">↻ Actualizar stock</button></div></section>';
+ $('main-panel').innerHTML='<section class="paper"><div class="row"><h2>📋 Ficha de artículo</h2><button class="btn btn-soft" id="back">← Volver</button></div><div class="detail-header"><div class="bigpic">'+pic(p)+'</div><div><h3>'+esc(p.name)+'</h3><span class="badge-note">'+esc(p.code)+'</span><p><span class="qty">'+fmt(p.quantity)+' '+esc(p.unit)+'</span></p></div></div><div class="fields-list">'+[['Categoría',p.category],['Color / variante',p.color],['Presentación',p.package_size],['Vencimiento',p.expiration_date||'No aplica'],['Ubicación',p.location],['Observaciones',p.notes]].map(([k,v])=>'<div><small>'+k+'</small><b>'+esc(v||'—')+'</b></div>').join('')+'</div><div class="stock-note"><b>📦 Registrar movimiento</b><p class="mini">Las entradas y salidas quedan registradas en la nube.</p><div class="adjust"><select id="kind"><option value="entrada">Entrada (+)</option><option value="salida">Salida (−)</option></select><input id="amount" type="number" min="0.01" max="1000000" step="0.01" placeholder="Cantidad"><button class="btn" id="move">Registrar</button></div><label class="form-field" style="margin-top:9px">Motivo<input id="reason" maxlength="200" placeholder="Entrega o reposición"></label></div><div class="form-actions"><button class="btn btn-green" id="edit">✎ Editar ficha / corregir stock</button><button class="btn btn-soft" id="refresh-detail">↻ Actualizar stock</button><button class="btn btn-red" id="archive-product">🗑 Eliminar artículo</button></div></section>';
  $('back').onclick=()=>nav('inventory');$('edit').onclick=()=>{editing=p.id;view='add';render()};
  $('refresh-detail').onclick=async()=>{await refresh();selected=p.id;view='detail';render()};
+ $('archive-product').onclick=async()=>{
+  if(busy)return;
+  const confirmFirst=window.confirm('¿Eliminar «'+p.name+'» ('+p.code+') del inventario y el Monitor?\\n\\nEsta ficha tiene '+fmt(p.quantity)+' '+p.unit+'. Las cantidades NO se sumarán a otro artículo. Podrás recuperarla desde «Eliminados».');
+  if(!confirmFirst)return;
+  const confirmLast=window.prompt('Para confirmar, escribí ELIMINAR. Se conservará una copia recuperable de la ficha.');
+  if(confirmLast!=='ELIMINAR'){toast('Eliminación cancelada');return}
+  busy=true;$('archive-product').disabled=true;
+  try{await api('archive',{id:p.id,operator});const d=await api('list');items=d.products||[];selected=null;view='inventory';render();toast('Artículo eliminado de la lista. Se puede recuperar desde Eliminados.')}
+  catch(e){toast('No se pudo eliminar: '+e.message);$('archive-product').disabled=false}
+  finally{busy=false}
+ };
  $('move').onclick=async()=>{if(busy)return;const n=Number($('amount').value),kind=$('kind').value;if(!Number.isFinite(n)||n<=0||n>1000000){toast('Ingresá una cantidad válida');return}if(kind==='salida'&&n>Number(p.quantity)){toast('Stock insuficiente según esta pantalla; actualizá los datos');return}busy=true;$('move').disabled=true;try{await api('move',{id:p.id,kind,amount:n,operator,note:$('reason').value});const d=await api('list');items=d.products||[];toast('Movimiento guardado para ambos dispositivos');render()}catch(e){toast(e.message);$('move').disabled=false}finally{busy=false}};
+}
+async function showArchived(){
+ status('Cargando artículos eliminados...');
+ try{
+  const d=await api('archived_list');if(view!=='archived')return;
+  const rows=d.products||[];
+  $('main-panel').innerHTML='<section class="paper"><div class="row"><h2>🗑 Artículos eliminados</h2><button id="archived-back" class="btn btn-soft">← Inventario</button></div><p class="mini">Estas fichas están ocultas del inventario y del Monitor, pero podés recuperarlas. No se borró su historial.</p>'+
+   (rows.length?rows.map(p=>'<div class="movement"><div><b>'+esc(p.name)+'</b><small>'+esc(p.code)+' · '+esc(p.category)+' · '+fmt(p.quantity)+' '+esc(p.unit)+' · Eliminado por '+esc(p.archived_by||'—')+'</small></div><button type="button" class="btn btn-green" data-restore="'+esc(p.id)+'">Recuperar</button></div>').join(''):'<div class="empty">No hay artículos eliminados.</div>')+'</section>';
+  $('archived-back').onclick=()=>nav('inventory');
+  document.querySelectorAll('[data-restore]').forEach(b=>b.onclick=async()=>{if(busy)return;const entry=rows.find(p=>p.id===b.dataset.restore);if(!entry)return;if(!window.confirm('¿Recuperar «'+entry.name+'» y volver a mostrarlo en el inventario y el Monitor?'))return;busy=true;b.disabled=true;try{await api('restore',{id:entry.id,operator});const data=await api('list');items=data.products||[];toast('Artículo recuperado');showArchived()}catch(e){toast(e.message);b.disabled=false}finally{busy=false}});
+ }catch(e){status('No se pudo abrir Eliminados: '+e.message)}
 }
 async function loadHistory(){status('Consultando movimientos compartidos...');try{const d=await api('history');movements=d.history||[];if(view!=='moves')return;$('main-panel').innerHTML='<section class="paper"><div class="row"><h2>⇆ Movimientos reales</h2><button class="btn btn-soft" id="reload">↻ Actualizar</button></div><p class="mini">Historial de ambos encargados. Máximo 300 movimientos recientes.</p>'+(movements.length?movements.map(h=>'<div class="movement"><div><b>'+esc(h.product_name)+'</b><small>'+esc(h.operator_name)+' · '+esc(h.kind)+' · '+esc(h.note||'')+' · '+new Date(h.created_at).toLocaleString('es-AR')+'</small></div><b>'+(Number(h.delta)>0?'+':'')+fmt(h.delta)+'</b></div>').join(''):'<div class="empty">Todavía no hay movimientos.</div>')+'</section>';$('reload').onclick=loadHistory}catch(err){status('No se pudo consultar el historial: '+err.message)}}
 if(access)refresh();else login();
