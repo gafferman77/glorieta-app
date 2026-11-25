@@ -97,16 +97,63 @@ footer{border-top:1px solid #334650;padding:24px 0;margin-top:24px;text-align:ce
  .remito-linea .remito-remove{grid-column:1/-1}
  .remito-record{align-items:flex-start;flex-direction:column}
 }
+
+/* Inicio GLORIETA: diseño aprobado, logo original y cinco accesos rápidos */
+.masthead{display:grid;grid-template-columns:56px 1fr 56px;gap:8px;align-items:start;text-align:center;padding:22px 20px 10px;border:0;background:transparent}
+.masthead-center{display:flex;flex-direction:column;align-items:center;min-width:0}
+.masthead .brand-logo{width:clamp(94px,18vw,136px);height:clamp(94px,18vw,136px);border-radius:50%;border:3px solid #f4f4f4;background:#f5f7f8;object-fit:contain;box-shadow:0 9px 24px #0007;padding:0}
+.masthead h1{font-size:clamp(30px,7vw,53px);letter-spacing:.06em;font-weight:800;margin:8px 0 0}
+.masthead .brand-stroke{height:5px;width:min(70%,290px);border-radius:100% 100% 40% 40%;background:linear-gradient(90deg,#ffdc27,#f6a52b);transform:rotate(-1deg);margin:2px auto 9px}
+.masthead p{color:#e8eff2;font-size:clamp(9px,2.55vw,16px);letter-spacing:.06em;margin:0;line-height:1.5}
+.header-icon{border:0;background:transparent;color:#fff;font-size:34px;min-height:52px;display:grid;place-items:center;align-self:start;padding:2px}
+#account-button{font-size:44px}
+.workarea{padding:0 20px 26px}
+.tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:clamp(8px,1.3vw,17px);margin:30px 0 12px;padding:0}
+.tiles[hidden],#section-toolbar[hidden]{display:none!important}
+.tile{grid-column:span 2;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:clamp(135px,27vw,200px);padding:12px 5px;justify-content:center;align-items:center;border-radius:20px;border:2px solid #3fbdff;background:linear-gradient(145deg,#105580,#053050);box-shadow:0 10px 25px #0005;color:#fff;font-size:clamp(12px,2.8vw,20px);font-weight:800;text-align:center;line-height:1.2}
+.tile:hover,.tile:focus-visible{filter:brightness(1.1);background:linear-gradient(145deg,#176896,#063a5f)}
+.tile.active{background:linear-gradient(145deg,#105580,#053050);border-color:#3fbdff;color:#fff}
+.tile-icon{font-size:clamp(42px,9vw,76px);line-height:1.05;position:relative;font-weight:400}
+.tile-icon small{position:absolute;right:-8px;bottom:0;font-weight:800;font-size:34px}
+.tile-add{background:linear-gradient(145deg,#057e70,#004d46);border-color:#18d1af}
+.tile-inventory{background:linear-gradient(145deg,#0b579b,#073574);border-color:#4cafff}
+.tile-moves{grid-column:span 3;background:linear-gradient(145deg,#59437a,#362b57);border-color:#b69ada}
+.tile-remitos{grid-column:span 3;background:linear-gradient(145deg,#ad5b1b,#74400e);border-color:#f0af62}
+.tile-add:hover,.tile-add:focus-visible{background:#09695f}
+.tile-inventory:hover,.tile-inventory:focus-visible{background:#175b9d}
+.tile-moves:hover,.tile-moves:focus-visible{background:#68508c}
+.tile-remitos:hover,.tile-remitos:focus-visible{background:#a06127}
+#section-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 7px}
+#section-operator{color:#aebcc7;font-size:12px}
+#main-panel:empty{min-height:0}
+footer{display:flex;flex-direction:column;gap:5px;align-items:center;text-align:center;border-top:1px solid #8498a4;padding:18px 8px 25px;margin:30px 0 0;color:#e3e9eb;font-size:clamp(11px,2.8vw,15px)}
+footer strong{font-size:clamp(19px,4.5vw,29px);color:#fff}
+footer em{font-size:clamp(10px,2.4vw,13px);margin-top:6px}
+body{background:#031a2a}.app-frame{background:linear-gradient(160deg,#021d31 0%,#012236 55%,#001726 100%)}.blackboard{background:transparent}
+@media(max-width:650px){.masthead{padding:21px 6px 10px;grid-template-columns:41px 1fr 41px}.masthead .brand-logo{width:112px;height:112px}.masthead h1{font-size:35px}.header-icon{font-size:28px}.workarea{padding:0 12px 25px}.tiles{margin-top:28px;gap:9px}.tile{border-radius:17px;min-height:130px}.tile-icon{font-size:47px}.tile-icon small{font-size:25px}.tile span:last-child{font-size:13px}}
+
 </style></head><body>
 <div class="app-frame"><div class="blackboard">
 <header class="masthead">
-<img class="brand-logo" src="./glorieta-icon-192.png" alt="Logo GLORIETA">
-<div><div class="tiny-chalk">PARQUE · GESTIÓN DE MATERIALES</div><h1>GLORIETA</h1><p>Administración de inventario · Acceso de encargados</p></div>
+<button class="header-icon" id="menu-home" type="button" aria-label="Ir al inicio"><span aria-hidden="true">☰</span></button>
+<div class="masthead-center">
+ <img class="brand-logo" src="./glorieta-icon-192.png" alt="Logo original de GLORIETA: edificio colorido">
+ <h1>GLORIETA</h1><div class="brand-stroke" aria-hidden="true"></div>
+ <p>GESTIÓN DE INVENTARIO Y REMITOS</p>
+</div>
+<button class="header-icon" id="account-button" type="button" aria-label="Cuenta y cierre de sesión"><span aria-hidden="true">☉</span></button>
+<span id="date-text" hidden></span>
 </header>
-<div class="workarea"><div class="status-line"><span>🟢 <b>Inventario activo</b></span><span id="date-text"></span></div><div class="section-heading"><span class="scribble">Panel de administración</span></div>
-<nav class="tiles" aria-label="Secciones"><button class="tile active" data-view="inventory"><span class="tile-icon">▤</span><span>Inventario</span></button><button class="tile" data-view="add"><span class="tile-icon">＋</span><span>Cargar artículo</span></button><button class="tile" data-view="moves"><span class="tile-icon">↔</span><span>Movimientos</span></button><button class="tile" data-view="pedidos"><span class="tile-icon">🛒</span><span>Pedidos</span></button><button class="tile" data-view="remitos"><span class="tile-icon">▤</span><span>Remitos</span></button></nav>
+<div class="workarea">
+<nav class="tiles" id="home-tiles" aria-label="Opciones principales de GLORIETA" hidden>
+ <button class="tile tile-pedidos" type="button" data-view="pedidos"><span class="tile-icon" aria-hidden="true">☷</span><span>Pedidos</span></button>
+ <button class="tile tile-add" type="button" data-view="add"><span class="tile-icon" aria-hidden="true">▣<small>＋</small></span><span>Cargar<br>artículo</span></button>
+ <button class="tile tile-inventory" type="button" data-view="inventory"><span class="tile-icon" aria-hidden="true">▤</span><span>Inventario</span></button>
+ <button class="tile tile-moves" type="button" data-view="moves"><span class="tile-icon" aria-hidden="true">⇄</span><span>Movimientos</span></button>
+ <button class="tile tile-remitos" type="button" data-view="remitos"><span class="tile-icon" aria-hidden="true">▧</span><span>Remitos</span></button>
+</nav>
+<div id="section-toolbar" hidden><button type="button" class="btn btn-soft" id="home-back">← Inicio</button><span id="section-operator"></span></div>
 <main id="main-panel" aria-live="polite"></main>
-<footer>GLORIETA · Sistema interno de inventario · Solo personal autorizado<br>
-<span>App realizada por Mario Farias y gestionada por Gabriel Carrizo.</span></footer></div>
+<footer><strong>GLORIETA</strong><span>Sistema interno de inventario.</span><span>Solo personal autorizado.</span><em>Creado por Mario Farías – Administrado por Gabriel Carrizo.</em></footer></div>
 </div></div>
-<div id="toast" role="status" aria-live="polite"></div><script src="visual-match.js?v=2"></script><script src="cloud.js?v=21"></script><script src="remitos.js?v=15"></script><script src="pedidos.js?v=1"></script></body></html>
+<div id="toast" role="status" aria-live="polite"></div><script src="visual-match.js?v=2"></script><script src="cloud.js?v=22"></script><script src="remitos.js?v=15"></script><script src="pedidos.js?v=1"></script></body></html>
