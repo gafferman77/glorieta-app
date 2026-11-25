@@ -148,8 +148,19 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 .remito-info{font-size:11px;color:#aebcc3;line-height:1.5}
 @media(max-width:680px){.monitor-tabs{margin-top:13px}.monitor-tab{flex:1;min-width:0;font-size:13px;padding:12px 10px}.remitos-cards{grid-template-columns:1fr}.remito-card{padding:14px}}
 
+
+.cart-add{margin-top:10px;padding:10px 13px;border:1px solid #ce9f54;background:#855f27;color:#fff;border-radius:7px;font-weight:800;font-size:13px;align-self:flex-start}
+.cart-add:hover{background:#a47431}
+.cart-row{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px;background:#23323b;border:1px solid #445967;border-radius:9px;flex-wrap:wrap}
+.cart-row small{display:block;margin-top:5px;color:#b4c4cc}
+.cart-quantity{display:flex;gap:9px;align-items:center}.cart-quantity button{border:1px solid #586f7b;color:#fff;background:#32434f;border-radius:6px;padding:9px 12px}
+.cart-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:17px 0}
+.cart-fields label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;color:#e1e8eb}
+.cart-fields input,.cart-fields select,.cart-fields textarea{width:100%;border:1px solid #526b78;color:#fff;background:#111b23;border-radius:7px;padding:12px}
+.cart-notice{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#e2f3e9;color:#152720;padding:12px 18px;border-radius:10px;z-index:25;box-shadow:0 8px 24px #0009}
+@media(max-width:700px){.cart-fields{grid-template-columns:1fr}.monitor-tab{min-width:0;padding:10px 7px;font-size:12px}.monitor-tabs{gap:5px}}
 </style></head>
-<body><div class="frame"><div class="board"><div class="content">
+<body<div class="frame"><div class="board"><div class="content">
 <header class="head">
 <img class="brand-logo" src="./glorieta-icon-192.png" alt="Logo Glorieta">
 <div class="head-copy"><div class="eyebrow">PARQUE · CONSULTA DE MATERIALES</div>
@@ -159,6 +170,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 <nav class="monitor-tabs" aria-label="Secciones del Monitor">
 <button id="tab-catalog" type="button" class="monitor-tab active" aria-current="page">▤ Materiales</button>
 <button id="tab-remitos" type="button" class="monitor-tab">▣ Remitos</button>
+<button id="tab-cart" type="button" class="monitor-tab">🛒 Carrito<span id="cart-count"></span></button>
 </nav>
 <div id="catalog-view">
 <div class="catalog-intro"><h2>Catálogo de materiales</h2><p>Buscá por nombre, categoría o inicial. Abrí un artículo para ver su foto grande y la cantidad disponible.</p></div>
@@ -179,6 +191,27 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 <div class="section-label"><span>Resultados</span><small id="filter-description">Todos los artículos</small></div><main class="cards" id="cards"><div class="empty">Consultando los materiales…</div></main>
 </div>
 <section id="detail-view" class="detail-view" aria-live="polite" hidden></section>
+<section id="cart-view" class="remitos-view" hidden>
+ <div class="catalog-intro"><h2>🛒 Pedido de materiales</h2><p>Elegí materiales del catálogo. GLORIETA revisa y prepara el pedido antes de entregarlo. El stock no se descuenta al enviarlo.</p></div>
+ <button type="button" class="detail-back" id="cart-back">← Seguir eligiendo materiales</button>
+ <div id="cart-success" class="badge-note" role="status" hidden></div>
+ <div id="cart-items" class="remitos-list"></div><p id="cart-summary" class="mini"></p>
+ <form id="cart-form" class="paper" hidden>
+  <h2>¿Para quién es el pedido?</h2>
+  <div class="cart-fields">
+   <label>Nombre de quien solicita *<input name="nombre" maxlength="100" required autocomplete="given-name"></label>
+   <label>Apellido de quien solicita *<input name="apellido" maxlength="100" required autocomplete="family-name"></label>
+   <label>Para quién / sector o institución *<input name="para_quien" maxlength="160" required placeholder="Ej.: Sala de juegos"></label>
+   <label>Destino o lugar de entrega *<input name="destino" maxlength="160" required placeholder="Ej.: Depósito, sede norte"></label>
+   <label>Tipo de pedido<select name="tipo"><option value="entrega">Entrega</option><option value="prestamo">Préstamo</option></select></label>
+   <label>Observaciones<textarea name="observaciones" maxlength="800" rows="2" placeholder="Aclaraciones opcionales"></textarea></label>
+  </div>
+  <label style="display:none">Sitio web<input name="website" tabindex="-1" autocomplete="off"></label>
+  <p class="mini">GLORIETA podrá editar o cancelar antes de preparar. El stock se descuenta solo al confirmar la entrega.</p>
+  <button class="sync" type="submit" id="cart-submit">Enviar pedido a GLORIETA</button>
+ </form>
+</section>
+<div id="cart-notice" class="cart-notice" role="status" hidden></div>
 <section id="remitos-view" class="remitos-view" hidden>
  <div class="catalog-intro"><h2>Remitos preparados</h2><p>Consultá los remitos de GLORIETA y abrilos para compartir por WhatsApp o guardar como PDF. Solo se muestran los documentos listos para entregar.</p></div>
  <div class="toolbar"><input id="remitos-search" class="search" type="search" placeholder="Buscar por número, solicitante o destino..." aria-label="Buscar remitos"><button id="remitos-refresh" class="sync" type="button">↻ Actualizar</button></div>
@@ -200,6 +233,7 @@ let currentSection="catalog",publicRemitos=[],remitosLoading=false,remitosLoaded
 const categoryNames=["Todas","Deportes","Farmacia","Librería","Taller","Juegos","Varios"];
 const letters=["Todas",..."ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"];
 function setTab(tab){
+ window.GlorietaCart?.hide();
  currentSection=tab;
  const showRemitos=tab==="remitos";
  $("tab-catalog").classList.toggle("active",!showRemitos);
@@ -266,7 +300,7 @@ function showDetail(code,focus=false){
  const box=$("detail-view");box.hidden=false;
  const qty=Number(p.quantity)||0,zero=qty<=0,low=qty>0&&qty<=3;
  const image=p.photo_url?'<img src="'+escapeHtml(p.photo_url)+'" alt="Foto ampliada de '+escapeHtml(p.name)+'" referrerpolicy="no-referrer">':'<div class="detail-placeholder"><span aria-hidden="true">📦</span><small>Este artículo todavía no tiene fotografía</small></div>';
- box.innerHTML='<button type="button" class="detail-back" id="detail-back">← Volver al catálogo</button><div class="detail-panel"><div class="detail-image">'+image+'</div><div class="detail-info"><div class="detail-eyebrow">Ficha del material · Solo consulta</div><h2>'+escapeHtml(p.name)+'</h2><div class="detail-quantity"><strong>'+numberFormat.format(qty)+'</strong><span>'+escapeHtml(p.unit||"unidades")+' disponibles</span></div><span class="detail-state '+(zero?"zero":low?"low":"")+'">'+(zero?"SIN STOCK":low?"QUEDAN POCOS":"DISPONIBLE")+'</span><dl class="detail-data">'+detailFields(p)+'</dl><p class="detail-hint">Información del inventario de GLORIETA. Esta pantalla no permite modificar cantidades ni reservar productos.</p></div></div>';
+ box.innerHTML='<button type="button" class="detail-back" id="detail-back">← Volver al catálogo</button><div class="detail-panel"><div class="detail-image">'+image+'</div><div class="detail-info"><div class="detail-eyebrow">Ficha del material · Solo consulta</div><h2>'+escapeHtml(p.name)+'</h2><div class="detail-quantity"><strong>'+numberFormat.format(qty)+'</strong><span>'+escapeHtml(p.unit||"unidades")+' disponibles</span></div><span class="detail-state '+(zero?"zero":low?"low":"")+'">'+(zero?"SIN STOCK":low?"QUEDAN POCOS":"DISPONIBLE")+'</span><dl class="detail-data">'+detailFields(p)+'</dl><p class="detail-hint">Información del inventario de GLORIETA. El pedido se confirmará en administración.</p><button type="button" class="cart-add" data-cart-code="'+escapeHtml(p.code)+'">+ Agregar al carrito</button></div></div>';
  $("detail-back").addEventListener("click",()=>{
   history.pushState(null,"",location.pathname+location.search);
   showCatalog(true);
@@ -320,7 +354,7 @@ function paint(){
  for(const p of filtered){
   const el=document.createElement("article");el.className="paper";el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label","Ver foto y detalles de "+p.name);el.addEventListener("click",()=>openDetail(p.code));el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openDetail(p.code)}});
   const image=p.photo_url?'<img loading="lazy" referrerpolicy="no-referrer" src="'+escapeHtml(p.photo_url)+'" alt="Foto del artículo">':"📦";
-  el.innerHTML='<div class="item-top"><div class="thumb">'+image+'</div><div><h2 class="product-name">'+escapeHtml(p.name)+'</h2><div class="meta">'+escapeHtml(p.category||"Varios")+(p.package_size?' · '+escapeHtml(p.package_size):"")+'</div><div class="card-more">Ver fotografía y detalle →</div></div></div>';
+  el.innerHTML='<div class="item-top"><div class="thumb">'+image+'</div><div><h2 class="product-name">'+escapeHtml(p.name)+'</h2><div class="meta">'+escapeHtml(p.category||"Varios")+(p.package_size?' · '+escapeHtml(p.package_size):"")+'</div><div class="card-more">Ver fotografía y detalle →</div></div></div><button class="cart-add" type="button" data-cart-code="'+escapeHtml(p.code)+'">+ Agregar al carrito</button>';
   frag.appendChild(el);
  }
  $("cards").replaceChildren(frag);
@@ -360,4 +394,4 @@ $("remitos-search").addEventListener("input",paintPublicRemitos);
 $("remitos-refresh").addEventListener("click",loadPublicRemitos);
 refresh();if(location.hash==="#remitos")setTab("remitos");
 setInterval(()=>{if(!document.hidden){if(currentSection==="remitos")loadPublicRemitos();else refresh()}},60000);
-</script></body></html>
+</script><script src="./monitor-cart.js?v=1"></script></body></html>
