@@ -36,6 +36,7 @@ async function api(action,rest={}){
  return result;
 }
 function login(){
+ document.body.classList.remove('inside-section');
  view='login';$('home-tiles').hidden=true;$('section-toolbar').hidden=true;
  $('main-panel').innerHTML='<section class="paper"><h2>🔑 Ingreso de equipo</h2><p>Ingresá una vez desde tu teléfono de confianza. GLORIETA recordará el acceso hasta 30 días.</p><form id="access-form" class="field-grid"><label class="form-field full">Nombre de quien está trabajando<input name="operator" required maxlength="100" placeholder="Nombre o apodo" value="'+esc(operator)+'"></label><label class="form-field full">Código privado del equipo<input name="access" required type="password" autocomplete="off" placeholder="Código de Glorieta"></label><div class="form-actions"><button class="btn btn-green" id="enter" type="submit">Entrar a Glorieta →</button></div></form><p class="mini">Se recuerda el acceso solamente en este dispositivo. Para quitarlo, cerrá sesión desde el icono de cuenta.</p></section>';
  $('access-form').onsubmit=async e=>{e.preventDefault();if(busy)return;const f=new FormData(e.target);const old=access;operator=String(f.get('operator')||'').trim();access=String(f.get('access')||'').trim();if(!operator||!access)return;busy=true;$('enter').disabled=true;$('enter').textContent='Conectando...';
@@ -69,6 +70,7 @@ function filtered(){return items.filter(p=>[p.name,p.code,p.location,p.color,p.u
 function list(prods){return prods.length?'<div class="products">'+prods.map(p=>'<button class="product" data-id="'+esc(p.id)+'"><span class="pic">'+pic(p)+'</span><span class="info"><b>'+esc(p.name)+'</b><small>'+esc(p.code)+' · '+esc(p.location||'Sin ubicación')+'</small><span class="qty '+(Number(p.quantity)<=3?'warning':'')+'">'+fmt(p.quantity)+' '+esc(p.unit)+'</span>'+(expiring(p)?'<span class="qty danger">⚠ Vencimiento próximo</span>':'')+'</span></button>').join('')+'</div>':'<div class="empty">No hay productos con ese nombre. Si es la primera carga, comenzá con «Nuevo».</div>'}
 function attach(){document.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>navigate('detail',{selected:b.dataset.id}))}
 function render(){
+ document.body.classList.toggle('inside-section',view!=='home'&&view!=='login');
  $('home-tiles').hidden=view!=='home';
  $('section-toolbar').hidden=view==='home'||view==='login';
  $('section-operator').textContent=operator?'Operador: '+operator:'';
