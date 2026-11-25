@@ -103,6 +103,59 @@ Deno.serve(async req=>{
    if(error)throw error;return respond({product:(await enrich([data]))[0]});
   }
 
+  if(action==="pedidos_list"){
+   const {data,error}=await db.from("glorieta_pedidos").select("*").order("created_at",{ascending:false}).limit(300);
+   if(error)throw error;return respond({pedidos:data||[]});
+  }
+  if(action==="pedido_get"){
+   const id=max(body.id,50);
+   if(!/^[0-9a-f-]{36}$/i.test(id))throw Error("Identificador incorrecto");
+   const {data,error}=await db.from("glorieta_pedidos").select("*").eq("id",id).single();
+   if(error)throw error;return respond({pedido:data});
+  }
+  if(action==="pedido_save"||action==="pedido_cancel"){
+   const p=body.pedido||{}, id=max(p.id,50),who=max(p.operator,100),expected=max(p.expected_updated_at,70);
+   if(!/^[0-9a-f-]{36}$/i.test(id)||!who||!expected)throw Error("Faltan datos para actualizar el pedido");
+   const {data:old,error:readError}=await db.from("glorieta_pedidos").select("estado").eq("id",id).single();
+   if(readError)throw readError;
+   if(old.estado!=="pendiente")throw Error("El pedido ya fue entregado o cancelado");
+   const payload:any={updated_by:who,updated_at:new Date().toISOString()};
+   if(action==="pedido_cancel")payload.estado="cancelado";
+   else{
+    const nombre=max(p.solicitante_nombre,100),apellido=max(p.solicitante_apellido,100),
+      para=max(p.para_quien,160),destino=max(p.destino,160);
+    if(!nombre||!apellido||!para||!destino)throw Error("Completá los datos del pedido");
+    if(!Array.isArray(p.items)||p.items.length<1||p.items.length>30)throw Error("Debe haber entre 1 y 30 artículos");
+    const ids=p.items.map((it:any)=>max(it.product_id,50));
+    if(ids.some((id:string)=>!/^[0-9a-f-]{36}$/i.test(id))||new Set(ids).size!==ids.length)throw Error("Artículos duplicados o inválidos");
+    const {data:products,error:productError}=await db.from("glorieta_products")
+      .select("id,name,code,unit,quantity").in("id",ids).is("archived_at",null);
+    if(productError)throw productError;
+    if(!products||products.length!==ids.length)throw Error("Algún material ya no está disponible");
+    const rows=p.items.map((it:any)=>{
+      const product=products.find((pr:any)=>pr.id===it.product_id);
+      const qty=Number(it.cantidad);
+      if(!product||!Number.isFinite(qty)||qty<=0||qty>1000000||Math.round(qty*100)!==qty*100)throw Error("Cantidad incorrecta");
+      if(qty>Number(product.quantity))throw Error("No hay suficientes unidades de "+product.name);
+      return {product_id:product.id,codigo:product.code,nombre:product.name,unidad:product.unit,cantidad:qty};
+    });
+    Object.assign(payload,{solicitante_nombre:nombre,solicitante_apellido:apellido,
+      para_quien:para,destino,observaciones:max(p.observaciones,800),responsable_retiro:nullable(p.responsable_retiro,120),
+      es_prestamo:p.es_prestamo===true,items:rows});
+   }
+   const {data,error}=await db.from("glorieta_pedidos").update(payload).eq("id",id)
+     .eq("estado","pendiente").eq("updated_at",expected).select("*").maybeSingle();
+   if(error)throw error;
+   if(!data)throw Error("Este pedido cambió en otro dispositivo. Volvé a abrirlo");
+   return respond({pedido:data});
+  }
+  if(action==="pedido_entregar"){
+   const id=max(body.id,50),who=max(body.operator,100),retira=nullable(body.responsable_retiro,120);
+   if(!/^[0-9a-f-]{36}$/i.test(id)||!who)throw Error("Pedido o encargado incorrecto");
+   const {data,error}=await db.rpc("glorieta_entregar_pedido",{p_pedido_id:id,p_operator:who,p_retirado_por:retira});
+   if(error)throw error;
+   return respond({remito_id:data});
+  }
   if(action==="remitos_list"){
    const {data,error}=await db.from("glorieta_remitos").select("id,numero,solicitante_nombre,solicitante_apellido,destino,es_prestamo,estado,created_at,updated_at").order("created_at",{ascending:false}).limit(200);
    if(error)throw error;return respond({remitos:data||[]});
