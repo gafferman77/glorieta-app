@@ -50,7 +50,7 @@ Deno.serve(async req=>{
   if(action==="staff_login"){
    const email=max(body.email,160).toLowerCase();
    const password=max(body.password,128);
-   if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||!password)return unauthorized();
+   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!password)return unauthorized();
    const bytes=crypto.getRandomValues(new Uint8Array(32));
    const token=Array.from(bytes).map(b=>b.toString(16).padStart(2,"0")).join("");
    const hash=await sha256(token);
