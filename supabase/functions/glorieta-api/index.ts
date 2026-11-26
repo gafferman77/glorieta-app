@@ -4,7 +4,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 const ORIGIN = "https://gafferman77.github.io";
 const headers = { "Access-Control-Allow-Origin": ORIGIN, "Access-Control-Allow-Headers": "content-type,x-glorieta-key", "Access-Control-Allow-Methods": "POST, OPTIONS", "Vary": "Origin", "Content-Type": "application/json", "Cache-Control": "no-store" };
 const respond = (data: unknown, status=200) => new Response(JSON.stringify(data),{status,headers});
-const unauthorized = () => respond({error:"Sesión vencida o nombre y contraseña incorrectos"},401);
+const unauthorized = () => respond({error:"Sesión vencida o correo y contraseña incorrectos"},401);
 const max = (value:unknown,n:number)=>String(value??"").trim().slice(0,n);
 const nullable = (value:unknown,n:number)=>max(value,n)||null;
 const good = (value:unknown)=>typeof value==="string" && value.length>=1;
@@ -12,10 +12,6 @@ const ERROR = (err: unknown) => { if (err instanceof Error) return err.message; 
 async function sha256(raw:string){
  const hash=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(raw));
  return Array.from(new Uint8Array(hash)).map(x=>x.toString(16).padStart(2,"0")).join("");
-}
-function normalizeStaff(raw:unknown){
- const key=max(raw,100).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
- return key==="fabo"?"fabian":key==="gaby"?"gabriel":key;
 }
 async function currentStaff(req:Request){
  const token=req.headers.get("x-glorieta-key")||"";
@@ -52,13 +48,13 @@ Deno.serve(async req=>{
  try{
   const body=await req.json(), action=max(body.action,30);
   if(action==="staff_login"){
-   const username=normalizeStaff(body.username);
+   const email=max(body.email,160).toLowerCase();
    const password=max(body.password,128);
-   if(!["mario","gabriel","yamila","fabian"].includes(username)||!password)return unauthorized();
+   if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||!password)return unauthorized();
    const bytes=crypto.getRandomValues(new Uint8Array(32));
    const token=Array.from(bytes).map(b=>b.toString(16).padStart(2,"0")).join("");
    const hash=await sha256(token);
-   const {data,error}=await db.rpc("glorieta_staff_login",{p_username:username,p_password:password,p_token_hash:hash});
+   const {data,error}=await db.rpc("glorieta_staff_login",{p_username:email,p_password:password,p_token_hash:hash});
    if(error)throw error;
    if(data?.error)return respond({error:data.error},401);
    return respond({token,operator:data.display_name,expires_at:data.expires_at});
