@@ -7,11 +7,11 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let items=[],movements=[],view='home',query='',selected=null,editing=null,imageData='',imageIsNew=false;
 const LOGIN_KEY='glorieta_device_session_v1';
-function storedLogin(){try{const x=JSON.parse(localStorage.getItem(LOGIN_KEY)||'null');if(x?.access&&x?.operator&&x.expires>Date.now())return x;localStorage.removeItem(LOGIN_KEY)}catch{}return null}
+function storedLogin(){try{const x=JSON.parse(localStorage.getItem(LOGIN_KEY)||'null');if(x?.access&&x?.operator&&x.expires>Date.now()&&/^[0-9a-f]{64}$/.test(x.access))return x;localStorage.removeItem(LOGIN_KEY)}catch{}return null}
 const savedLogin=storedLogin();
-let access=savedLogin?.access||sessionStorage.getItem('glorieta_access')||'',operator=savedLogin?.operator||sessionStorage.getItem('glorieta_operator')||'';
+let access=savedLogin?.access||'',operator=savedLogin?.operator||'';
 let busy=false,itemsLoaded=false,itemsLoading=null,restoringHistory=false;
-function rememberLogin(){try{localStorage.setItem(LOGIN_KEY,JSON.stringify({access,operator,expires:Date.now()+30*86400000}))}catch{}sessionStorage.setItem('glorieta_access',access);sessionStorage.setItem('glorieta_operator',operator)}
+function rememberLogin(expires){try{localStorage.setItem(LOGIN_KEY,JSON.stringify({access,operator,expires:expires?new Date(expires).getTime():Date.now()+30*86400000}))}catch{}}
 function clearLogin(){try{localStorage.removeItem(LOGIN_KEY)}catch{}sessionStorage.removeItem('glorieta_access');sessionStorage.removeItem('glorieta_operator');access='';operator='';items=[];itemsLoaded=false}
 function pageState(){return {glorieta:true,view,selected,editing}}
 function navigate(to,opts={}){
@@ -22,7 +22,7 @@ function navigate(to,opts={}){
 }
 function goBackInside(){if(history.state?.glorieta&&history.state?.sub)history.back();else navigate('home')}
 async function requestItems(){if(itemsLoading)return itemsLoading;itemsLoading=(async()=>{const r=await api('list');items=r.products||[];itemsLoaded=true})();try{await itemsLoading}finally{itemsLoading=null}}
-function loadForView(){const target=view;requestItems().then(()=>{if(view===target)render()}).catch(e=>{if(view!==target)return;if(/401|código de acceso|incorrecto/i.test(e.message)){clearLogin();login()}else{status('No se pudieron cargar los artículos: '+e.message);toast(e.message)}})}
+function loadForView(){const target=view;requestItems().then(()=>{if(view===target)render()}).catch(e=>{if(view!==target)return;if(/401|sesión vencida|incorrecto/i.test(e.message)){clearLogin();login()}else{status('No se pudieron cargar los artículos: '+e.message);toast(e.message)}})}
 
 const fmt=(n)=>Number(n).toLocaleString('es-AR',{maximumFractionDigits:2});
 const pic=p=>p.photo_url?'<img src="'+esc(p.photo_url)+'" alt="Foto de '+esc(p.name)+'">':'<span>📦</span>';
@@ -38,13 +38,25 @@ async function api(action,rest={}){
 function login(){
  document.body.classList.remove('inside-section');
  view='login';$('home-tiles').hidden=true;$('section-toolbar').hidden=true;
- $('main-panel').innerHTML='<section class="paper"><h2>🔑 Ingreso de equipo</h2><p>Ingresá una vez desde tu teléfono de confianza. GLORIETA recordará el acceso hasta 30 días.</p><form id="access-form" class="field-grid"><label class="form-field full">Nombre de quien está trabajando<input name="operator" required maxlength="100" placeholder="Nombre o apodo" value="'+esc(operator)+'"></label><label class="form-field full">Código privado del equipo<input name="access" required type="password" autocomplete="off" placeholder="Código de Glorieta"></label><div class="form-actions"><button class="btn btn-green" id="enter" type="submit">Entrar a Glorieta →</button></div></form><p class="mini">Se recuerda el acceso solamente en este dispositivo. Para quitarlo, cerrá sesión desde el icono de cuenta.</p></section>';
- $('access-form').onsubmit=async e=>{e.preventDefault();if(busy)return;const f=new FormData(e.target);const old=access;operator=String(f.get('operator')||'').trim();access=String(f.get('access')||'').trim();if(!operator||!access)return;busy=true;$('enter').disabled=true;$('enter').textContent='Conectando...';
- try{await api('ping');rememberLogin();view='home';selected=null;editing=null;history.replaceState(pageState(),'',location.pathname+location.search);render();toast('Acceso recordado en este dispositivo')}
- catch(err){access=old;toast(err.message);$('enter').disabled=false;$('enter').textContent='Entrar a Glorieta →'}
- finally{busy=false}};
+ $('main-panel').innerHTML='<section class="paper"><h2>🔑 Ingreso a GLORIETA</h2><p>Ingresá con tu nombre y la contraseña del equipo. El sistema recordará tu sesión en este celular durante 30 días.</p><form id="access-form" class="field-grid"><label class="form-field full">Tu nombre *<input name="username" required maxlength="60" autocomplete="username" list="staff-names" placeholder="Mario, Fabián, Yamila o Gabriel"><datalist id="staff-names"><option value="Mario"><option value="Fabián"><option value="Yamila"><option value="Gabriel"></datalist></label><label class="form-field full">Contraseña *<input name="password" required type="password" autocomplete="current-password" placeholder="Contraseña"></label><div class="form-actions"><button class="btn btn-green" id="enter" type="submit">Entrar a GLORIETA →</button></div></form><p class="mini">Solo personal autorizado. Los nombres y la contraseña no distinguen mayúsculas ni minúsculas. Para salir, usá el icono de cuenta.</p></section>';
+ $('access-form').onsubmit=async e=>{
+  e.preventDefault();if(busy)return;
+  const fd=new FormData(e.target);
+  const username=String(fd.get('username')||'').trim(),password=String(fd.get('password')||'').trim();
+  if(!username||!password)return;
+  busy=true;$('enter').disabled=true;$('enter').textContent='Ingresando…';
+  try{
+   const result=await api('staff_login',{username,password});
+   access=result.token;operator=result.operator;
+   rememberLogin(result.expires_at);
+   view='home';selected=null;editing=null;
+   history.replaceState(pageState(),'',location.pathname+location.search);
+   render();toast('Bienvenido/a, '+operator);
+  }catch(err){toast(err.message);$('enter').disabled=false;$('enter').textContent='Entrar a GLORIETA →'}
+  finally{busy=false}
+ };
 }
-async function refresh(){if(!access){login();return}try{await requestItems();render()}catch(e){if(/401|código de acceso|incorrecto/i.test(e.message)){clearLogin();login()}else{status('Error de conexión: '+e.message);toast(e.message)}}}
+async function refresh(){if(!access){login();return}try{await requestItems();render()}catch(e){if(/401|sesión vencida|incorrecto/i.test(e.message)){clearLogin();login()}else{status('Error de conexión: '+e.message);toast(e.message)}}}
 function nav(v){navigate(v)}
 document.querySelectorAll('.tile').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.view)));
 $('menu-home').onclick=()=>access?navigate('home'):login();
@@ -63,7 +75,7 @@ window.addEventListener('popstate',e=>{
 async function bootstrap(){
  if(!access){login();return}
  view='home';$('home-tiles').hidden=true;status('Comprobando acceso guardado…');
- try{await api('ping');rememberLogin();history.replaceState(pageState(),'',location.pathname+location.search);render()}
+ try{await api('ping');history.replaceState(pageState(),'',location.pathname+location.search);render()}
  catch(e){clearLogin();login()}
 }
 function filtered(){return items.filter(p=>[p.name,p.code,p.location,p.color,p.unit].some(v=>String(v||'').toLocaleLowerCase('es').includes(query.toLocaleLowerCase('es'))))}
@@ -88,8 +100,8 @@ function render(){
  if(view==='moves'){loadHistory();return}
  if(view==='pedidos'){showPedidos();return}
  if(view==='remitos'){showRemitos();return}
- $('main-panel').innerHTML='<section class="paper"><h2>☉ Cuenta y acceso</h2><p>Operador: <b>'+esc(operator)+'</b></p><p class="mini">Este dispositivo recordará el código compartido durante un máximo de 30 días. Usalo únicamente en celulares de confianza.</p><p class="mini">El código compartido y el nombre ingresado manualmente no equivalen a cuentas personales verificadas.</p><button class="btn btn-red" id="logout">Cerrar sesión y olvidar acceso</button></section>';
- $('logout').onclick=()=>{if(!confirm('¿Cerrar sesión en este dispositivo?'))return;clearLogin();history.replaceState(null,'',location.pathname+location.search);login()};
+ $('main-panel').innerHTML='<section class="paper"><h2>☉ Cuenta y acceso</h2><p>Operador: <b>'+esc(operator)+'</b></p><p class="mini">Tu sesión personal se recordará durante un máximo de 30 días. Usá esta opción únicamente en celulares de confianza.</p><p class="mini">Tu nombre está asociado a tu acceso. Mientras compartan la misma contraseña, cualquiera que la conozca podría entrar con otro nombre; más adelante podremos asignar claves individuales.</p><button class="btn btn-red" id="logout">Cerrar sesión y olvidar acceso</button></section>';
+ $('logout').onclick=async()=>{if(!confirm('¿Cerrar sesión en este dispositivo?'))return;try{await api('logout')}catch{}clearLogin();history.replaceState(null,'',location.pathname+location.search);login()};
 }
 async function compress(file){return new Promise((resolve,reject)=>{const r=new FileReader;r.onerror=reject;r.onload=()=>{const im=new Image;im.onerror=reject;im.onload=()=>{const scale=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*scale));c.height=Math.max(1,Math.round(im.height*scale));c.getContext('2d').drawImage(im,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',.7))};im.src=r.result};r.readAsDataURL(file)})}
 function normalizedArticleName(value){
