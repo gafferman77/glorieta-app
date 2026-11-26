@@ -189,7 +189,7 @@ Deno.serve(async req=>{
    return respond({remito_id:data});
   }
   if(action==="remitos_list"){
-   const {data,error}=await db.from("glorieta_remitos").select("id,numero,solicitante_nombre,solicitante_apellido,destino,autorizado_por,es_prestamo,estado,created_at,updated_at").order("created_at",{ascending:false}).limit(200);
+   const {data,error}=await db.from("glorieta_remitos").select("id,numero,solicitante_nombre,solicitante_apellido,destino,creado_por,autorizado_por,es_prestamo,estado,created_at,updated_at").order("created_at",{ascending:false}).limit(200);
    if(error)throw error;return respond({remitos:data||[]});
   }
   if(action==="remito_get"){
