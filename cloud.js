@@ -38,15 +38,15 @@ async function api(action,rest={}){
 function login(){
  document.body.classList.remove('inside-section');
  view='login';$('home-tiles').hidden=true;$('section-toolbar').hidden=true;
- $('main-panel').innerHTML='<section class="paper"><h2>🔑 Ingreso a GLORIETA</h2><p>Ingresá con tu nombre y la contraseña del equipo. El sistema recordará tu sesión en este celular durante 30 días.</p><form id="access-form" class="field-grid"><label class="form-field full">Tu nombre *<input name="username" required maxlength="60" autocomplete="username" list="staff-names" placeholder="Mario, Fabián, Yamila o Gabriel"><datalist id="staff-names"><option value="Mario"><option value="Fabián"><option value="Yamila"><option value="Gabriel"></datalist></label><label class="form-field full">Contraseña *<input name="password" required type="password" autocomplete="current-password" placeholder="Contraseña"></label><div class="form-actions"><button class="btn btn-green" id="enter" type="submit">Entrar a GLORIETA →</button></div></form><p class="mini">Solo personal autorizado. Los nombres y la contraseña no distinguen mayúsculas ni minúsculas. Para salir, usá el icono de cuenta.</p></section>';
+ $('main-panel').innerHTML='<section class="paper"><h2>🔑 Ingreso a GLORIETA</h2><p>Ingresá con tu correo electrónico y la contraseña del equipo. GLORIETA recordará tu sesión en este celular durante 30 días.</p><form id="access-form" class="field-grid"><label class="form-field full">Correo electrónico *<input name="email" type="email" required maxlength="160" autocomplete="username" inputmode="email" placeholder="tu@email.com"></label><label class="form-field full">Contraseña *<input name="password" required type="password" autocomplete="current-password" placeholder="Contraseña"></label><div class="form-actions"><button class="btn btn-green" id="enter" type="submit">Entrar a GLORIETA →</button></div></form><p class="mini">Solo personal autorizado. Los correos y la contraseña no distinguen mayúsculas ni minúsculas. Para salir, usá el icono de cuenta.</p></section>';
  $('access-form').onsubmit=async e=>{
   e.preventDefault();if(busy)return;
   const fd=new FormData(e.target);
-  const username=String(fd.get('username')||'').trim(),password=String(fd.get('password')||'').trim();
-  if(!username||!password)return;
+  const email=String(fd.get('email')||'').trim(),password=String(fd.get('password')||'').trim();
+  if(!email||!password)return;
   busy=true;$('enter').disabled=true;$('enter').textContent='Ingresando…';
   try{
-   const result=await api('staff_login',{username,password});
+   const result=await api('staff_login',{email,password});
    access=result.token;operator=result.operator;
    rememberLogin(result.expires_at);
    view='home';selected=null;editing=null;
