@@ -4,19 +4,29 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 const ORIGIN = "https://gafferman77.github.io";
 const headers = { "Access-Control-Allow-Origin": ORIGIN, "Access-Control-Allow-Headers": "content-type,x-glorieta-key", "Access-Control-Allow-Methods": "POST, OPTIONS", "Vary": "Origin", "Content-Type": "application/json", "Cache-Control": "no-store" };
 const respond = (data: unknown, status=200) => new Response(JSON.stringify(data),{status,headers});
-const unauthorized = () => respond({error:"Código de acceso incorrecto"},401);
+const unauthorized = () => respond({error:"Sesión vencida o nombre y contraseña incorrectos"},401);
 const max = (value:unknown,n:number)=>String(value??"").trim().slice(0,n);
 const nullable = (value:unknown,n:number)=>max(value,n)||null;
 const good = (value:unknown)=>typeof value==="string" && value.length>=1;
 const ERROR = (err: unknown) => { if (err instanceof Error) return err.message; if (err && typeof err === "object" && "message" in err && typeof (err as {message?:unknown}).message === "string") return String((err as {message:string}).message); return "No se pudo completar la operación. Intentá nuevamente."; };
-async function auth(req:Request){
- const got=req.headers.get("x-glorieta-key")||"";
- if(got.length<16||got.length>128)return false;
- const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(got));
- const received=Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join("");
- const expected="142f51b582033573d2c82789b68549444499e82eb6864c450162a59dad4e9e55";
- let diff=0;for(let i=0;i<expected.length;i++)diff |=expected.charCodeAt(i)^received.charCodeAt(i);
- return diff===0;
+async function sha256(raw:string){
+ const hash=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(raw));
+ return Array.from(new Uint8Array(hash)).map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+function normalizeStaff(raw:unknown){
+ const key=max(raw,100).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+ return key==="fabo"?"fabian":key==="gaby"?"gabriel":key;
+}
+async function currentStaff(req:Request){
+ const token=req.headers.get("x-glorieta-key")||"";
+ if(!/^[0-9a-f]{64}$/.test(token))return null;
+ const hash=await sha256(token);
+ const {data,error}=await db.from("glorieta_staff_sessions")
+  .select("staff_id,expires_at,glorieta_staff(display_name)")
+  .eq("token_hash",hash).gt("expires_at",new Date().toISOString()).maybeSingle();
+ if(error||!data)return null;
+ const person=data.glorieta_staff as any;
+ return {display_name:person?.display_name||""};
 }
 
 const db=createClient(Deno.env.get("SUPABASE_URL")||"",Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"",{auth:{persistSession:false,autoRefreshToken:false}});
@@ -37,11 +47,34 @@ Deno.serve(async req=>{
  if(req.method==="OPTIONS")return new Response(null,{headers});
  if(req.method!=="POST")return respond({error:"Método no permitido"},405);
  if(req.headers.get("origin")!==ORIGIN)return respond({error:"Origen no permitido"},403);
- if(!(await auth(req)))return unauthorized();
  const contentLength=Number(req.headers.get("content-length")||0);
  if(contentLength>1600000)return respond({error:"Solicitud demasiado grande"},413);
  try{
   const body=await req.json(), action=max(body.action,30);
+  if(action==="staff_login"){
+   const username=normalizeStaff(body.username);
+   const password=max(body.password,128);
+   if(!["mario","gabriel","yamila","fabian"].includes(username)||!password)return unauthorized();
+   const bytes=crypto.getRandomValues(new Uint8Array(32));
+   const token=Array.from(bytes).map(b=>b.toString(16).padStart(2,"0")).join("");
+   const hash=await sha256(token);
+   const {data,error}=await db.rpc("glorieta_staff_login",{p_username:username,p_password:password,p_token_hash:hash});
+   if(error)throw error;
+   if(data?.error)return respond({error:data.error},401);
+   return respond({token,operator:data.display_name,expires_at:data.expires_at});
+  }
+  const staff=await currentStaff(req);
+  if(!staff?.display_name)return unauthorized();
+  if(action==="logout"){
+   const token=req.headers.get("x-glorieta-key")||"";
+   await db.from("glorieta_staff_sessions").delete().eq("token_hash",await sha256(token));
+   return respond({ok:true});
+  }
+  // Identidad de acciones fijada por el servidor, nunca por texto enviado desde el teléfono.
+  body.operator=staff.display_name;
+  if(body.product&&typeof body.product==="object")body.product.operator=staff.display_name;
+  if(body.pedido&&typeof body.pedido==="object")body.pedido.operator=staff.display_name;
+  if(body.remito&&typeof body.remito==="object")body.remito.operator=staff.display_name;
   if(action==="ping")return respond({ok:true});
   if(action==="list"){
    const {data,error}=await db.from("glorieta_products").select("*").is("archived_at",null).order("name").limit(1000);
